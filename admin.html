@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087f5b">
+<title>Pansell | Admin Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--green:#087f5b;--dark:#07523e;--gold:#d5a735;--bg:#f3f7f5;--text:#18352c;--muted:#718078;--white:#fff;--red:#c0392b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--text)}
+header{background:var(--dark);color:white;padding:20px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-size:24px;font-weight:800;letter-spacing:.3px}
+.brand span{color:#e7c35f}
+header small{display:block;color:#d7e9e1;margin-top:5px}
+button{border:0;border-radius:9px;padding:11px 15px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.logout{background:#fff;color:var(--dark)}
+main{max-width:1150px;margin:25px auto;padding:0 16px}
+.panel{background:white;border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 3px 15px #1232}
+h1{font-size:25px;margin:0 0 8px}
+h2{font-size:19px;margin:0 0 16px}
+.muted{color:var(--muted);font-size:13px}
+input{width:100%;padding:13px;border:1px solid #dce6e1;border-radius:9px;margin:8px 0 14px;font-size:15px}
+.primary{background:var(--green);color:white}
+.danger{background:#fff0ee;color:var(--red)}
+.secondary{background:#edf5f1;color:var(--dark)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.stat{background:white;border-radius:13px;padding:18px;box-shadow:0 3px 12px #1231}
+.stat strong{display:block;font-size:27px;color:var(--green);margin-top:7px}
+.tabs{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}
+.tab{background:#e4eee9;color:var(--dark)}
+.tab.active{background:var(--green);color:white}
+.item{border:1px solid #e4ece7;border-radius:12px;padding:16px;margin:12px 0}
+.item h3{margin:0 0 8px;font-size:17px}
+.item p{margin:6px 0;line-height:1.5;overflow-wrap:anywhere}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.status{display:inline-block;padding:5px 9px;border-radius:20px;background:#fff4d7;color:#825c00;font-size:12px;font-weight:700}
+.status.approved{background:#e3f6eb;color:#087443}
+.status.rejected{background:#ffeded;color:#a52b2b}
+.notice{padding:12px;border-radius:9px;margin:12px 0;background:#edf5f1;color:var(--dark);font-size:14px}
+.error{background:#fff0ee;color:#a52b2b}
+.hidden{display:none!important}
+.empty{text-align:center;padding:28px;color:var(--muted)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.toolbar input{flex:1;min-width:180px;margin:0}
+@media(max-width:600px){.stats{grid-template-columns:1fr}.stat{padding:14px}header{padding:17px}main{margin-top:17px}.panel{padding:16px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand">Pan<span>sell</span> Admin</div>
+    <small>Platform management and approvals</small>
+  </div>
+  <button class="logout hidden" id="logoutBtn">Sign out</button>
+</header>
+
+<main>
+  <section class="panel" id="loginPanel">
+    <h1>Administrator login</h1>
+    <p class="muted">Sign in with your authorized Pansell administrator account.</p>
+    <form id="loginForm">
+      <label>Email address</label>
+      <input id="email" type="email" autocomplete="username" required placeholder="Admin email">
+      <label>Password</label>
+      <input id="password" type="password" autocomplete="current-password" required placeholder="Your password">
+      <button class="primary" id="loginBtn" type="submit">Sign in</button>
+    </form>
+    <div id="loginMessage"></div>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <div class="panel">
+      <h1>Admin dashboard</h1>
+      <p class="muted">Review merchant applications and product submissions before they appear for customers.</p>
+      <div id="welcome" class="notice"></div>
+      <button class="secondary" id="refreshBtn">Refresh dashboard</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">Pending merchants<strong id="pendingMerchants">0</strong></div>
+      <div class="stat">Pending products<strong id="pendingProducts">0</strong></div>
+      <div class="stat">Approved merchants<strong id="approvedMerchants">0</strong></div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="merchants">Merchant applications</button>
+        <button class="tab" data-tab="products">Product approvals</button>
+      </div>
+
+      <div id="merchantsSection">
+        <h2>Merchant applications</h2>
+        <div class="toolbar">
+          <input id="merchantSearch" placeholder="Search business name or email">
+        </div>
+        <div id="merchantList"><div class="empty">Loading merchant applications...</div></div>
+      </div>
+
+      <div id="productsSection" class="hidden">
+        <h2>Product submissions</h2>
+        <div class="toolbar">
+          <input id="productSearch" placeholder="Search product name or category">
+        </div>
+        <div id="productList"><div class="empty">Loading products...</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="globalMessage"></div>
+</main>
+
+<script>
+const SUPABASE_URL = "https://ofayykhbdljssdxpxmcv.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_p9CveE2emCUT6dguqj63mQ_rVD7O35U";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let merchants = [];
+let products = [];
+let busy = false;
+
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+
+function showMessage(target, message, isError=false) {
+  const el = $(target);
+  el.innerHTML = `<div class="notice ${isError ? "error" : ""}">${escapeHTML(message)}</div>`;
+}
+
+function clearMessage(target) {
+  $(target).innerHTML = "";
+}
+
+function dateText(value) {
+  if (!value) return "Not available";
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? "Not available" : d.toLocaleString();
+}
+
+function statusHTML(status) {
+  const s = String(status || "pending").toLowerCase();
+  const cls = ["approved","rejected"].includes(s) ? s : "";
+  return `<span class="status ${cls}">${escapeHTML(s)}</span>`;
+}
+
+async function checkAdmin() {
+  const {data:{session}, error} = await db.auth.getSession();
+  if (error) throw error;
+
+  if (!session) {
+    showLogin();
+    return;
+  }
+
+  const {data, error:adminError} = await db.rpc("pansell_is_admin");
+  if (adminError) throw adminError;
+
+  if (data !== true) {
+    await db.auth.signOut();
+    showLogin();
+    showMessage("loginMessage", "This account is not authorized to access the admin dashboard.", true);
+    return;
+  }
+
+  $("loginPanel").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  $("logoutBtn").classList.remove("hidden");
+  $("welcome").textContent = "Administrator access verified: " + session.user.email;
+  await loadDashboard();
+}
+
+function showLogin() {
+  $("loginPanel").classList.remove("hidden");
+  $("dashboard").classList.add("hidden");
+  $("logoutBtn").classList.add("hidden");
+}
+
+async function loadDashboard() {
+  clearMessage("globalMessage");
+  $("merchantList").innerHTML = '<div class="empty">Loading...</div>';
+  $("productList").innerHTML = '<div class="empty">Loading...</div>';
+
+  const [merchantResult, productResult] = await Promise.all([
+    db.from("merchants").select("id,user_id,business_name,business_description,business_email,business_phone,country,approval_status,created_at").order("created_at",{ascending:false}),
+    db.from("products").select("id,merchant_id,name,description,category,price,currency,image_url,stock_quantity,approval_status,is_active,created_at,commission_rate").order("created_at",{ascending:false})
+  ]);
+
+  if (merchantResult.error) {
+    showMessage("globalMessage", "Could not load merchants: " + merchantResult.error.message, true);
+    $("merchantList").innerHTML = '<div class="empty">Unable to load merchant applications.</div>';
+    return;
+  }
+
+  if (productResult.error) {
+    showMessage("globalMessage", "Could not load products: " + productResult.error.message, true);
+    $("productList").innerHTML = '<div class="empty">Unable to load products.</div>';
+    return;
+  }
+
+  merchants = merchantResult.data || [];
+  products = productResult.data || [];
+
+  $("pendingMerchants").textContent = merchants.filter(x => x.approval_status === "pending").length;
+  $("pendingProducts").textContent = products.filter(x => x.approval_status === "pending").length;
+  $("approvedMerchants").textContent = merchants.filter(x => x.approval_status === "approved").length;
+
+  renderMerchants();
+  renderProducts();
+}
+
+function renderMerchants() {
+  const q = $("merchantSearch").value.trim().toLowerCase();
+  const filtered = merchants.filter(m =>
+    [m.business_name,m.business_email,m.country,m.business_phone]
+      .some(v => String(v || "").toLowerCase().includes(q))
+  );
+
+  if (!filtered.length) {
+    $("merchantList").innerHTML = '<div class="empty">No merchant applications found.</div>';
+    return;
+  }
+
+  $("merchantList").innerHTML = filtered.map(m => `
+    <article class="item">
+      <h3>${escapeHTML(m.business_name || "Unnamed business")}</h3>
+      ${statusHTML(m.approval_status)}
+      <p>${escapeHTML(m.business_description || "No business description provided.")}</p>
+      <p><b>Email:</b> ${escapeHTML(m.business_email || "Not provided")}</p>
+      <p><b>Phone:</b> ${escapeHTML(m.business_phone || "Not provided")}</p>
+      <p><b>Country:</b> ${escapeHTML(m.country || "Not provided")}</p>
+      <p class="muted">Submitted: ${escapeHTML(dateText(m.created_at))}</p>
+      <p class="muted">Merchant record: ${escapeHTML(m.id)}</p>
+      <div class="actions">
+        <button class="primary" onclick="decideMerchant('${m.id}','approved')" ${busy ? "disabled" : ""}>Approve merchant</button>
+        <button class="danger" onclick="decideMerchant('${m.id}','rejected')" ${busy ? "disabled" : ""}>Reject application</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderProducts() {
+  const q = $("productSearch").value.trim().toLowerCase();
+  const filtered = products.filter(p =>
+    [p.name,p.category,p.description]
+      .some(v => String(v || "").toLowerCase().includes(q))
+  );
+
+  if (!filtered.length) {
+    $("productList").innerHTML = '<div class="empty">No products found.</div>';
+    return;
+  }
+
+  $("productList").innerHTML = filtered.map(p => `
+    <article class="item">
+      <h3>${escapeHTML(p.name || "Unnamed product")}</h3>
+      ${statusHTML(p.approval_status)}
+      <p>${escapeHTML(p.description || "No description provided.")}</p>
+      <p><b>Category:</b> ${escapeHTML(p.category || "Not specified")}</p>
+      <p><b>Price:</b> ${escapeHTML(p.currency || "NGN")} ${Number(p.price || 0).toLocaleString()}</p>
+      <p><b>Stock:</b> ${escapeHTML(p.stock_quantity ?? "Not specified")}</p>
+      <p><b>Commission:</b> ${escapeHTML(p.commission_rate ?? 0)}%</p>
+      <p><b>Merchant ID:</b> ${escapeHTML(p.merchant_id)}</p>
+      <p class="muted">Submitted: ${escapeHTML(dateText(p.created_at))}</p>
+      ${p.image_url ? `<p><a href="${escapeHTML(p.image_url)}" target="_blank" rel="noopener">View product image</a></p>` : ""}
+      <div class="actions">
+        <button class="primary" onclick="decideProduct('${p.id}','approved')" ${busy ? "disabled" : ""}>Approve product</button>
+        <button class="danger" onclick="decideProduct('${p.id}','rejected')" ${busy ? "disabled" : ""}>Reject product</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+async function decideMerchant(id, decision) {
+  if (busy) return;
+  const action = decision === "approved" ? "approve" : "reject";
+  if (!confirm(`Are you sure you want to ${action} this merchant application?`)) return;
+
+  busy = true;
+  try {
+    const {error} = await db.rpc("pansell_admin_decide_merchant", {
+      p_merchant_id:id,
+      p_decision:decision
+    });
+    if (error) throw error;
+    showMessage("globalMessage", `Merchant application ${decision}.`);
+    await loadDashboard();
+  } catch (e) {
+    showMessage("globalMessage", e.message || "Merchant approval failed.", true);
+  } finally {
+    busy = false;
+  }
+}
+
+async function decideProduct(id, decision) {
+  if (busy) return;
+  const action = decision === "approved" ? "approve" : "reject";
+  if (!confirm(`Are you sure you want to ${action} this product?`)) return;
+
+  busy = true;
+  try {
+    const {error} = await db.rpc("pansell_admin_decide_product", {
+      p_product_id:id,
+      p_decision:decision
+    });
+    if (error) throw error;
+    showMessage("globalMessage", `Product ${decision}.`);
+    await loadDashboard();
+  } catch (e) {
+    showMessage("globalMessage", e.message || "Product approval failed.", true);
+  } finally {
+    busy = false;
+  }
+}
+
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  clearMessage("loginMessage");
+  $("loginBtn").disabled = true;
+  $("loginBtn").textContent = "Signing in...";
+
+  try {
+    const {error} = await db.auth.signInWithPassword({
+      email:$("email").value.trim(),
+      password:$("password").value
+    });
+    if (error) throw error;
+    await checkAdmin();
+  } catch (e) {
+    showMessage("loginMessage", e.message || "Login failed.", true);
+  } finally {
+    $("loginBtn").disabled = false;
+    $("loginBtn").textContent = "Sign in";
+  }
+});
+
+$("logoutBtn").addEventListener("click", async () => {
+  await db.auth.signOut();
+  showLogin();
+});
+
+$("refreshBtn").addEventListener("click", loadDashboard);
+$("merchantSearch").addEventListener("input", renderMerchants);
+$("productSearch").addEventListener("input", renderProducts);
+
+document.querySelectorAll("[data-tab]").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll("[data-tab]").forEach(b => b.classList.remove("active"));
+    button.classList.add("active");
+    const showMerchants = button.dataset.tab === "merchants";
+    $("merchantsSection").classList.toggle("hidden", !showMerchants);
+    $("productsSection").classList.toggle("hidden", showMerchants);
+  });
+});
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT") showLogin();
+});
+
+checkAdmin().catch(error => {
+  showLogin();
+  showMessage("loginMessage", error.message || "Could not verify administrator access.", true);
+});
+</script>
+</body>
+</html>
