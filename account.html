@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,49 +7,25 @@
 <meta name="description" content="Your Pansell customer, affiliate and merchant dashboard.">
 <title>Pansell | Account Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-:root{
-  --green:#087f5b;
-  --deep:#064b37;
-  --gold:#d6ad55;
-  --paper:#f5faf7;
-  --line:#e2ece6;
-  --ink:#173329;
-  --muted:#687a70;
-}
+:root{--green:#087f5b;--deep:#064b37;--gold:#d6ad55;--paper:#f5faf7;--line:#e2ece6;--ink:#173329;--muted:#687a70}
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:var(--paper);color:var(--ink)}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
-header{
-  background:white;padding:15px 5%;border-bottom:1px solid var(--line);
-  display:flex;justify-content:space-between;align-items:center;gap:12px;
-  position:sticky;top:0;z-index:10
-}
+header{background:white;padding:15px 5%;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
 .brand{font-size:24px;font-weight:900;color:var(--deep);text-decoration:none}
 header a{color:var(--green);text-decoration:none;font-weight:bold}
 main{max-width:1150px;margin:25px auto;padding:0 16px}
-.panel{
-  background:white;border:1px solid var(--line);border-radius:16px;
-  padding:22px;margin-bottom:18px;box-shadow:0 7px 24px #064b3710
-}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:0 7px 24px #064b3710}
 h1,h2,h3{color:var(--deep)}
-h1{font-size:27px;margin-top:0}
-h2{font-size:21px;margin-top:0}
-h3{font-size:17px}
+h1{font-size:27px;margin-top:0}h2{font-size:21px;margin-top:0}h3{font-size:17px}
 .muted{color:var(--muted);font-size:14px}
 label{display:block;font-weight:bold;margin:13px 0 6px}
-input,select,textarea{
-  width:100%;padding:12px;border:1px solid #ccdcd2;
-  border-radius:9px;background:white
-}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ccdcd2;border-radius:9px;background:white}
 textarea{min-height:90px;resize:vertical}
-.btn{
-  display:inline-block;border:0;border-radius:9px;padding:12px 17px;
-  background:var(--green);color:white;font-weight:bold
-}
+.btn{display:inline-block;border:0;border-radius:9px;padding:12px 17px;background:var(--green);color:white;font-weight:bold}
 .btn:hover{background:var(--deep)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .secondary{background:#e8f3ed;color:var(--deep)}
@@ -63,31 +38,16 @@ textarea{min-height:90px;resize:vertical}
 .auth{max-width:480px;margin:45px auto}
 .auth .panel{padding:27px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
-.tab{
-  border:1px solid var(--line);background:white;color:var(--deep);
-  border-radius:9px;padding:10px 13px;font-weight:bold
-}
+.tab{border:1px solid var(--line);background:white;color:var(--deep);border-radius:9px;padding:10px 13px;font-weight:bold}
 .tab.active{background:var(--green);color:white;border-color:var(--green)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-.stat{
-  background:#f0f7f2;border:1px solid var(--line);padding:17px;
-  border-radius:12px
-}
+.stat{background:#f0f7f2;border:1px solid var(--line);padding:17px;border-radius:12px}
 .stat strong{display:block;font-size:23px;color:var(--green);margin-top:5px}
-.membership{
-  background:linear-gradient(120deg,var(--deep),var(--green));
-  color:white;border-radius:14px;padding:22px
-}
+.membership{background:linear-gradient(120deg,var(--deep),var(--green));color:white;border-radius:14px;padding:22px}
 .membership h2,.membership p{color:white}
 .membership strong{font-size:30px;color:#ffe2a1}
-.product{
-  border:1px solid var(--line);border-radius:13px;padding:15px;
-  background:white;min-width:0
-}
-.product img{
-  width:100%;height:170px;object-fit:cover;
-  border-radius:9px;background:#edf4ef
-}
+.product{border:1px solid var(--line);border-radius:13px;padding:15px;background:white;min-width:0}
+.product img{width:100%;height:170px;object-fit:cover;border-radius:9px;background:#edf4ef}
 .product h3{margin-bottom:5px}
 .price{font-weight:900;color:var(--green);font-size:19px}
 .product .btn{margin-top:10px}
@@ -98,1148 +58,583 @@ th,td{text-align:left;padding:11px 7px;border-bottom:1px solid var(--line)}
 .empty{padding:20px;text-align:center;color:var(--muted);background:#f7faf8;border-radius:10px}
 hr{border:0;border-top:1px solid var(--line);margin:20px 0}
 footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
-@media(max-width:750px){
-  .grid{grid-template-columns:1fr 1fr}
-  .panel{padding:17px}
-}
-@media(max-width:480px){
-  .grid{grid-template-columns:1fr}
-  header{padding:13px 4%}
-  .brand{font-size:21px}
-}
+@media(max-width:750px){.grid{grid-template-columns:1fr 1fr}.panel{padding:17px}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}header{padding:13px 4%}.brand{font-size:21px}}
 </style>
 </head>
-
 <body>
-
 <header>
-  <a class="brand" href="./">Pansell</a>
-  <a href="./">Back to home</a>
+<a class="brand" href="./">Pansell</a>
+<a href="./">Back to home</a>
 </header>
-
 <main>
 
-<!-- AUTHENTICATION -->
 <section id="authPanel" class="auth">
-  <div class="panel">
-    <h1>Welcome to Pansell</h1>
-    <p class="muted">Create an account or sign in to shop, sell and earn.</p>
-
-    <div id="signupFields">
-      <label for="fullName">Full name</label>
-      <input id="fullName" autocomplete="name" placeholder="Your full name">
-    </div>
-
-    <label for="email">Email address</label>
-    <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
-
-    <label for="password">Password</label>
-    <input id="password" type="password" autocomplete="current-password" placeholder="At least 8 characters">
-
-    <div class="actions">
-      <button class="btn" id="signupBtn" type="button">Create account</button>
-      <button class="btn secondary" id="loginBtn" type="button">Sign in</button>
-    </div>
-    <div id="authMessage" class="message hidden"></div>
-  </div>
+<div class="panel">
+<h1>Welcome to Pansell</h1>
+<p class="muted">Create an account or sign in to shop, sell and earn.</p>
+<div id="signupFields">
+<label for="fullName">Full name</label>
+<input id="fullName" autocomplete="name" placeholder="Your full name">
+</div>
+<label for="email">Email address</label>
+<input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+<label for="password">Password</label>
+<input id="password" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+<div class="actions">
+<button class="btn" id="signupBtn" type="button">Create account</button>
+<button class="btn secondary" id="loginBtn" type="button">Sign in</button>
+</div>
+<div id="authMessage" class="message hidden"></div>
+</div>
 </section>
 
-<!-- MAIN DASHBOARD -->
 <section id="dashboard" class="hidden">
+<div class="panel">
+<h1>My Pansell Dashboard</h1>
+<p id="welcome" class="muted"></p>
+<div class="actions">
+<button class="btn secondary" id="refreshBtn" type="button">Refresh dashboard</button>
+<button class="btn secondary" id="logoutBtn" type="button">Sign out</button>
+</div>
+<div id="mainMessage" class="message hidden"></div>
+</div>
 
-  <div class="panel">
-    <h1>My Pansell Dashboard</h1>
-    <p id="welcome" class="muted"></p>
-    <div class="actions">
-      <button class="btn secondary" id="refreshBtn" type="button">Refresh dashboard</button>
-      <button class="btn secondary" id="logoutBtn" type="button">Sign out</button>
-    </div>
-    <div id="mainMessage" class="message hidden"></div>
-  </div>
+<div class="tabs">
+<button class="tab active" data-tab="overview">Overview</button>
+<button class="tab" data-tab="marketplace">Marketplace</button>
+<button class="tab" data-tab="affiliate">Affiliate</button>
+<button class="tab" data-tab="merchant">Merchant</button>
+<button class="tab" data-tab="orders">My orders</button>
+<button class="tab" data-tab="profile">My profile</button>
+</div>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="overview">Overview</button>
-    <button class="tab" data-tab="marketplace">Marketplace</button>
-    <button class="tab" data-tab="affiliate">Affiliate</button>
-    <button class="tab" data-tab="merchant">Merchant</button>
-    <button class="tab" data-tab="orders">My orders</button>
-    <button class="tab" data-tab="profile">My profile</button>
-  </div>
+<section id="overview" class="tab-content">
+<div class="panel">
+<h2>Account overview</h2>
+<div class="grid">
+<div class="stat"><span class="muted">Account type</span><strong id="accountRole">Customer</strong></div>
+<div class="stat"><span class="muted">Affiliate membership</span><strong id="membershipStatus">Inactive</strong></div>
+<div class="stat"><span class="muted">Affiliate expiry</span><strong id="membershipExpiry">Not active</strong></div>
+</div>
+</div>
+<div class="membership">
+<h2>Become a Pansell affiliate</h2>
+<p>Unlock access to eligible affiliate products and earn commissions on qualifying sales through your referral links.</p>
+<strong>₦2,000 / year</strong>
+<p>One annual membership gives you access to eligible affiliate offers. You do not pay ₦2,000 for every product.</p>
+<button class="btn gold" id="joinAffiliateBtn" type="button">Become an affiliate</button>
+<div id="membershipMessage" class="message hidden"></div>
+</div>
+<div class="panel" style="margin-top:18px">
+<h2>Getting started</h2>
+<p class="muted">Choose how you want to use Pansell.</p>
+<div class="actions">
+<button class="btn" data-goto="marketplace">Explore products</button>
+<button class="btn secondary" data-goto="affiliate">Affiliate dashboard</button>
+<button class="btn secondary" data-goto="merchant">Sell on Pansell</button>
+</div>
+</div>
+</section>
 
-  <!-- OVERVIEW -->
-  <section id="overview" class="tab-content">
-    <div class="panel">
-      <h2>Account overview</h2>
-      <div class="grid">
-        <div class="stat">
-          <span class="muted">Account type</span>
-          <strong id="accountRole">Customer</strong>
-        </div>
-        <div class="stat">
-          <span class="muted">Affiliate membership</span>
-          <strong id="membershipStatus">Inactive</strong>
-        </div>
-        <div class="stat">
-          <span class="muted">Affiliate expiry</span>
-          <strong id="membershipExpiry">Not active</strong>
-        </div>
-      </div>
-    </div>
+<section id="marketplace" class="tab-content hidden">
+<div class="panel">
+<h2>Marketplace</h2>
+<p class="muted">Discover digital and physical products offered by Pansell merchants.</p>
+<label for="productSearch">Search products</label>
+<input id="productSearch" type="search" placeholder="Search by product name or description">
+<label for="categoryFilter">Product category</label>
+<select id="categoryFilter"><option value="">All categories</option></select>
+<label for="productSort">Sort products</label>
+<select id="productSort">
+<option value="newest">Newest first</option>
+<option value="price-low">Price: low to high</option>
+<option value="price-high">Price: high to low</option>
+<option value="name">Name: A to Z</option>
+</select>
+<div class="actions"><button class="btn" id="loadProductsBtn" type="button">Load products</button></div>
+<div id="productsMessage" class="message hidden"></div>
+</div>
+<div id="productsGrid" class="grid"></div>
+</section>
 
-    <div class="membership">
-      <h2>Become a Pansell affiliate</h2>
-      <p>Unlock access to eligible affiliate products and earn commissions on qualifying sales through your referral links.</p>
-      <strong>₦2,000 / year</strong>
-      <p>One annual membership gives you access to eligible affiliate offers. You do not pay ₦2,000 for every product.</p>
-      <button class="btn gold" id="joinAffiliateBtn" type="button">Become an affiliate</button>
-      <div id="membershipMessage" class="message hidden"></div>
-    </div>
+<section id="affiliate" class="tab-content hidden">
+<div class="panel">
+<h2>Affiliate dashboard</h2>
+<p class="muted">Your affiliate tools are available when your annual membership is active.</p>
+<div id="affiliateAccess" class="message">Checking membership...</div>
+</div>
+<div id="affiliateTools" class="hidden">
+<div class="panel">
+<h2>Generate a referral link</h2>
+<label for="affiliateProduct">Choose a product</label>
+<select id="affiliateProduct"><option value="">Load eligible products first</option></select>
+<button class="btn" id="generateLinkBtn" type="button">Generate referral link</button>
+<div id="linkMessage" class="message hidden"></div>
+</div>
+<div class="panel"><h2>Your referral links</h2><div id="referralLinks" class="muted">Loading referral links...</div></div>
+<div class="panel">
+<h2>Your commissions</h2>
+<p class="muted">Commission records are displayed according to the status recorded by Pansell.</p>
+<div id="commissions" class="muted">Loading commissions...</div>
+</div>
+</div>
+</section>
 
-    <div class="panel" style="margin-top:18px">
-      <h2>Getting started</h2>
-      <p class="muted">Choose how you want to use Pansell.</p>
-      <div class="actions">
-        <button class="btn" data-goto="marketplace">Explore products</button>
-        <button class="btn secondary" data-goto="affiliate">Affiliate dashboard</button>
-        <button class="btn secondary" data-goto="merchant">Sell on Pansell</button>
-      </div>
-    </div>
-  </section>
+<section id="merchant" class="tab-content hidden">
+<div class="panel">
+<h2>Merchant centre</h2>
+<p class="muted">Apply to sell products on Pansell. Merchant applications must be approved before selling.</p>
+<div id="merchantStatus" class="message">Checking merchant account...</div>
+</div>
+<div id="merchantApplication" class="panel hidden">
+<h2>Merchant application</h2>
+<label for="businessName">Business name</label><input id="businessName" placeholder="Your business name">
+<label for="businessDescription">Business description</label><textarea id="businessDescription" placeholder="Describe your business and products"></textarea>
+<label for="businessEmail">Business email</label><input id="businessEmail" type="email" placeholder="Business email">
+<label for="businessPhone">Business phone</label><input id="businessPhone" placeholder="Phone number">
+<label for="businessCountry">Country</label><input id="businessCountry" value="Nigeria">
+<button class="btn" id="applyMerchantBtn" type="button">Submit application</button>
+<div id="merchantApplicationMessage" class="message hidden"></div>
+</div>
+<div id="merchantTools" class="hidden">
+<div class="panel">
+<h2>Add a product</h2>
+<p class="muted">For now, enter an image URL. Secure file uploads can be added through Supabase Storage later.</p>
+<label for="productName">Product name</label><input id="productName" placeholder="Product name">
+<label for="productDescription">Description</label><textarea id="productDescription" placeholder="Describe your product"></textarea>
+<label for="productCategory">Category</label><input id="productCategory" placeholder="e.g. Digital products, Fashion">
+<label for="productPrice">Price (₦)</label><input id="productPrice" type="number" min="1" step="0.01" placeholder="Price">
+<label for="productImage">Product image URL</label><input id="productImage" type="url" placeholder="https://example.com/image.jpg">
+<label for="productStock">Stock quantity</label><input id="productStock" type="number" min="0" value="1">
+<label for="commissionRate">Affiliate commission rate (%)</label><input id="commissionRate" type="number" min="0" max="100" step="0.1" value="10">
+<button class="btn" id="addProductBtn" type="button">Submit product for approval</button>
+<div id="productMessage" class="message hidden"></div>
+</div>
+<div class="panel"><h2>Your products</h2><div id="merchantProducts" class="muted">Loading your products...</div></div>
+</div>
+</section>
 
-  <!-- MARKETPLACE -->
-  <section id="marketplace" class="tab-content hidden">
-    <div class="panel">
-      <h2>Marketplace</h2>
-      <p class="muted">Discover digital and physical products offered by Pansell merchants.</p>
+<section id="orders" class="tab-content hidden">
+<div class="panel">
+<h2>My orders</h2>
+<p class="muted">Your purchases will appear here after checkout.</p>
+<div id="ordersList">Loading orders...</div>
+</div>
+</section>
 
-      <label for="productSearch">Search products</label>
-      <input id="productSearch" type="search" placeholder="Search by product name or description">
-
-      <label for="categoryFilter">Product category</label>
-      <select id="categoryFilter">
-        <option value="">All categories</option>
-      </select>
-
-      <label for="productSort">Sort products</label>
-      <select id="productSort">
-        <option value="newest">Newest first</option>
-        <option value="price-low">Price: low to high</option>
-        <option value="price-high">Price: high to low</option>
-        <option value="name">Name: A to Z</option>
-      </select>
-
-      <div class="actions">
-        <button class="btn" id="loadProductsBtn" type="button">Load products</button>
-      </div>
-
-      <div id="productsMessage" class="message hidden"></div>
-    </div>
-
-    <div id="productsGrid" class="grid"></div>
-  </section>
-
-  <!-- AFFILIATE -->
-  <section id="affiliate" class="tab-content hidden">
-    <div class="panel">
-      <h2>Affiliate dashboard</h2>
-      <p class="muted">Your affiliate tools are available when your annual membership is active.</p>
-      <div id="affiliateAccess" class="message">Checking membership...</div>
-    </div>
-
-    <div id="affiliateTools" class="hidden">
-      <div class="panel">
-        <h2>Generate a referral link</h2>
-        <label for="affiliateProduct">Choose a product</label>
-        <select id="affiliateProduct">
-          <option value="">Load eligible products first</option>
-        </select>
-        <button class="btn" id="generateLinkBtn" type="button">Generate referral link</button>
-        <div id="linkMessage" class="message hidden"></div>
-      </div>
-
-      <div class="panel">
-        <h2>Your referral links</h2>
-        <div id="referralLinks" class="muted">Loading referral links...</div>
-      </div>
-
-      <div class="panel">
-        <h2>Your commissions</h2>
-        <p class="muted">Commission records are displayed according to the status recorded by Pansell.</p>
-        <div id="commissions" class="muted">Loading commissions...</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- MERCHANT -->
-  <section id="merchant" class="tab-content hidden">
-    <div class="panel">
-      <h2>Merchant centre</h2>
-      <p class="muted">Apply to sell products on Pansell. Merchant applications must be approved before selling.</p>
-      <div id="merchantStatus" class="message">Checking merchant account...</div>
-    </div>
-
-    <div id="merchantApplication" class="panel hidden">
-      <h2>Merchant application</h2>
-      <label for="businessName">Business name</label>
-      <input id="businessName" placeholder="Your business name">
-      <label for="businessDescription">Business description</label>
-      <textarea id="businessDescription" placeholder="Describe your business and products"></textarea>
-      <label for="businessEmail">Business email</label>
-      <input id="businessEmail" type="email" placeholder="Business email">
-      <label for="businessPhone">Business phone</label>
-      <input id="businessPhone" placeholder="Phone number">
-      <label for="businessCountry">Country</label>
-      <input id="businessCountry" value="Nigeria">
-      <button class="btn" id="applyMerchantBtn" type="button">Submit application</button>
-      <div id="merchantApplicationMessage" class="message hidden"></div>
-    </div>
-
-    <div id="merchantTools" class="hidden">
-      <div class="panel">
-        <h2>Add a product</h2>
-        <p class="muted">For now, enter an image URL. Secure file uploads can be added through Supabase Storage later.</p>
-        <label for="productName">Product name</label>
-        <input id="productName" placeholder="Product name">
-        <label for="productDescription">Description</label>
-        <textarea id="productDescription" placeholder="Describe your product"></textarea>
-        <label for="productCategory">Category</label>
-        <input id="productCategory" placeholder="e.g. Digital products, Fashion">
-        <label for="productPrice">Price (₦)</label>
-        <input id="productPrice" type="number" min="1" step="0.01" placeholder="Price">
-        <label for="productImage">Product image URL</label>
-        <input id="productImage" type="url" placeholder="https://example.com/image.jpg">
-        <label for="productStock">Stock quantity</label>
-        <input id="productStock" type="number" min="0" value="1">
-        <label for="commissionRate">Affiliate commission rate (%)</label>
-        <input id="commissionRate" type="number" min="0" max="100" step="0.1" value="10">
-        <button class="btn" id="addProductBtn" type="button">Submit product for approval</button>
-        <div id="productMessage" class="message hidden"></div>
-      </div>
-
-      <div class="panel">
-        <h2>Your products</h2>
-        <div id="merchantProducts" class="muted">Loading your products...</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ORDERS -->
-  <section id="orders" class="tab-content hidden">
-    <div class="panel">
-      <h2>My orders</h2>
-      <p class="muted">Your purchases will appear here after the secure checkout system is connected.</p>
-      <div id="ordersList">Loading orders...</div>
-    </div>
-  </section>
-
-  <!-- PROFILE -->
-  <section id="profile" class="tab-content hidden">
-    <div class="panel">
-      <h2>My profile</h2>
-      <label for="profileName">Full name</label>
-      <input id="profileName">
-      <label for="profilePhone">Phone number</label>
-      <input id="profilePhone">
-      <label for="profileCountry">Country</label>
-      <input id="profileCountry">
-      <label for="profileRole">How will you use Pansell?</label>
-      <select id="profileRole">
-        <option value="customer">Customer</option>
-        <option value="affiliate">Affiliate</option>
-        <option value="merchant">Merchant</option>
-        <option value="both">Affiliate and merchant</option>
-      </select>
-      <button class="btn" id="saveProfileBtn" type="button">Save profile</button>
-      <div id="profileMessage" class="message hidden"></div>
-      <hr>
-      <p class="muted">Account email: <strong id="profileEmail"></strong></p>
-    </div>
-  </section>
-
+<section id="profile" class="tab-content hidden">
+<div class="panel">
+<h2>My profile</h2>
+<label for="profileName">Full name</label><input id="profileName">
+<label for="profilePhone">Phone number</label><input id="profilePhone">
+<label for="profileCountry">Country</label><input id="profileCountry">
+<label for="profileRole">How will you use Pansell?</label>
+<select id="profileRole">
+<option value="customer">Customer</option><option value="affiliate">Affiliate</option><option value="merchant">Merchant</option><option value="both">Affiliate and merchant</option>
+</select>
+<button class="btn" id="saveProfileBtn" type="button">Save profile</button>
+<div id="profileMessage" class="message hidden"></div>
+<hr><p class="muted">Account email: <strong id="profileEmail"></strong></p>
+</div>
+</section>
 </section>
 </main>
-
 <footer>© <span id="year"></span> Pansell. Shop. Promote. Earn.</footer>
 
 <script>
 "use strict";
 
-/* Pansell Supabase connection */
-const SUPABASE_URL = "https://ofayykhbdljssdxpxmcv.supabase.co";
-const SUPABASE_PUBLIC_KEY = "sb_publishable_p9CveE2emCUT6dguqj63mQ_rVD7O35U";
+const SUPABASE_URL="https://ofayykhbdljssdxpxmcv.supabase.co";
+const SUPABASE_PUBLIC_KEY="sb_publishable_p9CveE2emCUT6dguqj63mQ_rVD7O35U";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLIC_KEY);
+const $=id=>document.getElementById(id);
 
-const db = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLIC_KEY
-);
+let currentUser=null,currentProfile=null,currentMembership=null,currentMerchant=null;
+let eligibleProducts=[],dashboardLoading=false,checkoutBusy=false;
 
-const $ = id => document.getElementById(id);
+$("year").textContent=new Date().getFullYear();
 
-let currentUser = null;
-let currentProfile = null;
-let currentMembership = null;
-let currentMerchant = null;
-let eligibleProducts = [];
-let dashboardLoading = false;
-
-$("year").textContent = new Date().getFullYear();
-
-function message(id, text, type="success") {
-  const el = $(id);
-  if (!el) return;
-  el.textContent = text;
-  el.classList.remove("hidden","error","success");
-  el.classList.add(type === "error" ? "error" : "success");
+function message(id,text,type="success"){
+ const el=$(id);if(!el)return;
+ el.textContent=text;el.classList.remove("hidden","error","success");
+ el.classList.add(type==="error"?"error":"success");
+}
+function money(value){
+ return new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN"}).format(Number(value||0));
+}
+function escapeHTML(value){
+ return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
+}
+function setButton(id,disabled,text){
+ const b=$(id);if(!b)return;b.disabled=disabled;if(text)b.textContent=text;
 }
 
-function hideMessage(id) {
-  $(id)?.classList.add("hidden");
+function showTab(name){
+ document.querySelectorAll(".tab-content").forEach(s=>s.classList.toggle("hidden",s.id!==name));
+ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));
+ if(name==="marketplace"&&!eligibleProducts.length)loadProducts();
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.goto)));
+
+async function signUp(){
+ const fullName=$("fullName").value.trim(),email=$("email").value.trim(),password=$("password").value;
+ if(!fullName||!email||password.length<8){message("authMessage","Enter your name, email and a password of at least 8 characters.","error");return;}
+ setButton("signupBtn",true,"Creating account...");
+ try{
+  const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:fullName},emailRedirectTo:location.origin+location.pathname}});
+  if(error)throw error;
+  if(data.session)await loadDashboard(data.session.user);
+  else message("authMessage","Registration received. Check your email and confirm your account before signing in.");
+ }catch(e){message("authMessage",e.message,"error");}
+ finally{setButton("signupBtn",false,"Create account");}
+}
+async function signIn(){
+ const email=$("email").value.trim(),password=$("password").value;
+ if(!email||!password){message("authMessage","Enter your email and password.","error");return;}
+ setButton("loginBtn",true,"Signing in...");
+ try{const {data,error}=await db.auth.signInWithPassword({email,password});if(error)throw error;await loadDashboard(data.user);}
+ catch(e){message("authMessage",e.message,"error");}
+ finally{setButton("loginBtn",false,"Sign in");}
 }
 
-function money(value) {
-  return new Intl.NumberFormat("en-NG",{
-    style:"currency",
-    currency:"NGN"
-  }).format(Number(value || 0));
-}
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#039;"
-  })[char]);
-}
-
-function setButton(id, disabled, text) {
-  const button = $(id);
-  if (!button) return;
-  button.disabled = disabled;
-  if (text) button.textContent = text;
-}
-
-function showTab(tabName) {
-  document.querySelectorAll(".tab-content").forEach(section => {
-    section.classList.toggle("hidden", section.id !== tabName);
-  });
-
-  document.querySelectorAll(".tab").forEach(button => {
-    button.classList.toggle("active", button.dataset.tab === tabName);
-  });
-
-  if (tabName === "marketplace" && !eligibleProducts.length) {
-    loadProducts();
-  }
-}
-
-document.querySelectorAll(".tab").forEach(button => {
-  button.addEventListener("click", () => showTab(button.dataset.tab));
-});
-
-document.querySelectorAll("[data-goto]").forEach(button => {
-  button.addEventListener("click", () => showTab(button.dataset.goto));
-});
-
-/* AUTHENTICATION */
-
-async function signUp() {
-  const fullName = $("fullName").value.trim();
-  const email = $("email").value.trim();
-  const password = $("password").value;
-
-  if (!fullName || !email || password.length < 8) {
-    message("authMessage","Enter your name, email and a password of at least 8 characters.","error");
-    return;
-  }
-
-  setButton("signupBtn",true,"Creating account...");
-
-  try {
-    const {data,error} = await db.auth.signUp({
-      email,
-      password,
-      options:{
-        data:{full_name:fullName},
-        emailRedirectTo:window.location.origin + window.location.pathname
-      }
-    });
-
-    if (error) throw error;
-
-    if (data.session) {
-      await loadDashboard(data.session.user);
-    } else {
-      message("authMessage","Registration received. Check your email and confirm your account before signing in.");
-    }
-  } catch(error) {
-    message("authMessage",error.message,"error");
-  } finally {
-    setButton("signupBtn",false,"Create account");
-  }
-}
-
-async function signIn() {
-  const email = $("email").value.trim();
-  const password = $("password").value;
-
-  if (!email || !password) {
-    message("authMessage","Enter your email and password.","error");
-    return;
-  }
-
-  setButton("loginBtn",true,"Signing in...");
-
-  try {
-    const {data,error} = await db.auth.signInWithPassword({email,password});
-    if (error) throw error;
-    await loadDashboard(data.user);
-  } catch(error) {
-    message("authMessage",error.message,"error");
-  } finally {
-    setButton("loginBtn",false,"Sign in");
-  }
-}
-
-/* EDGE FUNCTION REQUEST */
-
-async function callPansellFunction(payload) {
-  const {data,error} = await db.auth.getSession();
-  if (error) throw error;
-  if (!data.session) throw new Error("Please sign in again.");
-
-  const response = await fetch(
-    SUPABASE_URL + "/functions/v1/pansell-paystack",
-    {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "apikey":SUPABASE_PUBLIC_KEY,
-        "Authorization":"Bearer " + data.session.access_token
-      },
-      body:JSON.stringify(payload)
-    }
-  );
-
-  const result = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(result.error || result.message || "Payment service request failed.");
-  }
-
-  if (result.error) throw new Error(result.error);
-
-  return result;
+async function callPansellFunction(payload){
+ const {data,error}=await db.auth.getSession();if(error)throw error;
+ if(!data.session)throw new Error("Please sign in again.");
+ const response=await fetch(SUPABASE_URL+"/functions/v1/pansell-paystack",{
+  method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLIC_KEY,"Authorization":"Bearer "+data.session.access_token},body:JSON.stringify(payload)
+ });
+ const result=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(result.error||result.message||"Payment service request failed.");
+ if(result.error)throw new Error(result.error);return result;
 }
 
 /* AFFILIATE MEMBERSHIP */
-
-async function loadMembership() {
-  const {data,error} = await db
-    .from("affiliate_memberships")
-    .select("membership_status,membership_fee,currency,started_at,expires_at")
-    .eq("user_id",currentUser.id)
-    .maybeSingle();
-
-  if (error) throw error;
-
-  currentMembership = data;
-
-  const active = data &&
-    data.membership_status === "active" &&
-    data.expires_at &&
-    new Date(data.expires_at) > new Date();
-
-  $("membershipStatus").textContent = active ? "Active" : (data?.membership_status || "Inactive");
-  $("membershipExpiry").textContent = active
-    ? new Date(data.expires_at).toLocaleDateString()
-    : "Not active";
-
-  $("joinAffiliateBtn").textContent = active
-    ? "Membership active"
-    : "Pay ₦2,000 and join";
-
-  $("joinAffiliateBtn").disabled = !!active;
-
-  $("affiliateAccess").textContent = active
-    ? "Your affiliate membership is active. You can access affiliate tools."
-    : "Your affiliate membership is not active. Pay ₦2,000 for 12 months of affiliate access.";
-
-  $("affiliateTools").classList.toggle("hidden",!active);
-
-  return !!active;
+async function loadMembership(){
+ const {data,error}=await db.from("affiliate_memberships").select("membership_status,membership_fee,currency,started_at,expires_at").eq("user_id",currentUser.id).maybeSingle();
+ if(error)throw error;currentMembership=data;
+ const active=!!(data&&data.membership_status==="active"&&data.expires_at&&new Date(data.expires_at)>new Date());
+ $("membershipStatus").textContent=active?"Active":(data?.membership_status||"Inactive");
+ $("membershipExpiry").textContent=active?new Date(data.expires_at).toLocaleDateString():"Not active";
+ $("joinAffiliateBtn").textContent=active?"Membership active":"Pay ₦2,000 and join";
+ $("joinAffiliateBtn").disabled=active;
+ $("affiliateAccess").textContent=active?"Your affiliate membership is active. You can access affiliate tools.":"Your affiliate membership is not active. Pay ₦2,000 for 12 months of affiliate access.";
+ $("affiliateTools").classList.toggle("hidden",!active);return active;
+}
+async function joinAffiliate(){
+ setButton("joinAffiliateBtn",true,"Connecting to Paystack...");
+ try{
+  const result=await callPansellFunction({action:"initialize_membership"});
+  const url=result.authorization_url||result.data?.authorization_url;
+  if(!url)throw new Error("Paystack did not return a checkout link.");
+  location.href=url;
+ }catch(e){message("membershipMessage",e.message,"error");setButton("joinAffiliateBtn",false,"Pay ₦2,000 and join");}
+}
+async function verifyMembershipPayment(){
+ const params=new URLSearchParams(location.search);
+ const reference=params.get("reference")||params.get("trxref");
+ if(!reference||params.get("membership")!=="success")return;
+ message("membershipMessage","Verifying your affiliate membership payment...");
+ try{
+  const result=await callPansellFunction({action:"verify_membership",reference});
+  if(result.success||result.status==="success"||result.activated)message("membershipMessage","Payment verified. Your affiliate membership is active.");
+  else message("membershipMessage","Payment verification returned an unexpected response. Please refresh or contact support.","error");
+  await loadMembership();
+ }catch(e){message("membershipMessage","We could not verify this payment yet: "+e.message,"error");}
+ finally{history.replaceState({},document.title,location.origin+location.pathname);}
 }
 
-async function joinAffiliate() {
-  setButton("joinAffiliateBtn",true,"Connecting to Paystack...");
-
-  try {
-    const result = await callPansellFunction({
-      action:"initialize_membership"
-    });
-
-    const checkoutURL = result.authorization_url ||
-      result.data?.authorization_url;
-
-    if (!checkoutURL) {
-      throw new Error("Paystack did not return a checkout link.");
-    }
-
-    window.location.href = checkoutURL;
-  } catch(error) {
-    message("membershipMessage",error.message,"error");
-    setButton("joinAffiliateBtn",false,"Pay ₦2,000 and join");
-  }
+/* PRODUCT CHECKOUT */
+async function callProductCheckout(payload){
+ const {data,error}=await db.auth.getSession();if(error)throw error;
+ if(!data.session)throw new Error("Your session has expired. Please sign in again.");
+ const response=await fetch(SUPABASE_URL+"/functions/v1/pansell-product-checkout",{
+  method:"POST",
+  headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLIC_KEY,"Authorization":"Bearer "+data.session.access_token},
+  body:JSON.stringify(payload)
+ });
+ const result=await response.json().catch(()=>({}));
+ if(!response.ok||result.success===false)throw new Error(result.message||result.error||"Product checkout request failed.");
+ return result;
 }
-
-async function verifyMembershipPayment() {
-  const params = new URLSearchParams(window.location.search);
-  const reference = params.get("reference") || params.get("trxref");
-
-  if (!reference) return;
-
-  message("membershipMessage","Verifying your affiliate membership payment...");
-
-  try {
-    const result = await callPansellFunction({
-      action:"verify_membership",
-      reference
-    });
-
-    if (result.success || result.status === "success" || result.activated) {
-      message("membershipMessage","Payment verified. Your affiliate membership is active.");
-    } else {
-      message("membershipMessage","Payment verification returned an unexpected response. Please refresh or contact support.","error");
-    }
-
-    await loadMembership();
-  } catch(error) {
-    message("membershipMessage","We could not verify this payment yet: " + error.message,"error");
-  } finally {
-    const cleanURL = window.location.origin + window.location.pathname;
-    window.history.replaceState({},document.title,cleanURL);
-  }
+async function buyProduct(productId){
+ if(checkoutBusy)return;
+ if(!currentUser){message("productsMessage","Please sign in before buying a product.","error");return;}
+ const product=eligibleProducts.find(p=>p.id===productId);
+ if(!product){message("productsMessage","This product is no longer available. Reload the marketplace.","error");return;}
+ checkoutBusy=true;
+ const button=document.querySelector('[data-buy-product="'+productId+'"]');
+ if(button){button.disabled=true;button.textContent="Preparing checkout...";}
+ try{
+  const params=new URLSearchParams(location.search);
+  const result=await callProductCheckout({
+   action:"initialize_product_checkout",product_id:productId,quantity:1,
+   referral_code:params.get("ref")||""
+  });
+  if(!result.authorization_url)throw new Error("Paystack did not return a checkout link.");
+  location.href=result.authorization_url;
+ }catch(e){
+  message("productsMessage",e.message,"error");checkoutBusy=false;
+  if(button){button.disabled=false;button.textContent="Buy now";}
+ }
 }
-
-/* PROFILE */
-
-async function loadProfile() {
-  const {data,error} = await db
-    .from("profiles")
-    .select("full_name,email,phone,country,role,account_status")
-    .eq("id",currentUser.id)
-    .maybeSingle();
-
-  if (error) throw error;
-
-  currentProfile = data;
-
-  $("profileName").value = data?.full_name || currentUser.user_metadata?.full_name || "";
-  $("profilePhone").value = data?.phone || "";
-  $("profileCountry").value = data?.country || "Nigeria";
-  $("profileRole").value = data?.role || "customer";
-  $("profileEmail").textContent = currentUser.email || "";
-  $("accountRole").textContent = data?.role || "Customer";
+async function verifyProductPayment(){
+ const params=new URLSearchParams(location.search);
+ const reference=params.get("reference")||params.get("trxref");
+ if(!reference||params.get("membership")==="success")return;
+ message("mainMessage","Verifying your product payment...");
+ try{
+  const result=await callProductCheckout({action:"verify_product_checkout",reference});
+  if(!result.success)throw new Error(result.message||"Payment verification failed.");
+  message("mainMessage","Payment verified successfully. Your order is confirmed.");
+  await loadOrders();
+ }catch(e){message("mainMessage","We could not confirm this product payment yet: "+e.message,"error");}
+ finally{history.replaceState({},document.title,location.origin+location.pathname);}
+}/* PROFILE */
+async function loadProfile(){
+ const {data,error}=await db.from("profiles").select("full_name,email,phone,country,role,account_status").eq("id",currentUser.id).maybeSingle();
+ if(error)throw error;currentProfile=data;
+ $("profileName").value=data?.full_name||currentUser.user_metadata?.full_name||"";
+ $("profilePhone").value=data?.phone||"";
+ $("profileCountry").value=data?.country||"Nigeria";
+ $("profileRole").value=data?.role||"customer";
+ $("profileEmail").textContent=currentUser.email||"";
+ $("accountRole").textContent=data?.role||"Customer";
 }
-
-async function saveProfile() {
-  setButton("saveProfileBtn",true,"Saving...");
-
-  try {
-    const updates = {
-      id:currentUser.id,
-      full_name:$("profileName").value.trim(),
-      email:currentUser.email,
-      phone:$("profilePhone").value.trim(),
-      country:$("profileCountry").value.trim(),
-      role:$("profileRole").value,
-      updated_at:new Date().toISOString()
-    };
-
-    const {error} = await db
-      .from("profiles")
-      .upsert(updates,{onConflict:"id"});
-
-    if (error) throw error;
-
-    message("profileMessage","Your profile has been updated.");
-    await loadProfile();
-  } catch(error) {
-    message("profileMessage","Could not update profile: " + error.message,"error");
-  } finally {
-    setButton("saveProfileBtn",false,"Save profile");
-  }
+async function saveProfile(){
+ setButton("saveProfileBtn",true,"Saving...");
+ try{
+  const updates={id:currentUser.id,full_name:$("profileName").value.trim(),email:currentUser.email,phone:$("profilePhone").value.trim(),country:$("profileCountry").value.trim(),role:$("profileRole").value,updated_at:new Date().toISOString()};
+  const {error}=await db.from("profiles").upsert(updates,{onConflict:"id"});
+  if(error)throw error;message("profileMessage","Your profile has been updated.");await loadProfile();
+ }catch(e){message("profileMessage","Could not update profile: "+e.message,"error");}
+ finally{setButton("saveProfileBtn",false,"Save profile");}
 }
 
 /* MARKETPLACE */
-
-function renderMarketplaceProducts() {
-  const search = $("productSearch").value.trim().toLowerCase();
-  const category = $("categoryFilter").value;
-  const sort = $("productSort").value;
-
-  let products = eligibleProducts.filter(product => {
-    const searchableText = [
-      product.name,
-      product.description,
-      product.category
-    ].join(" ").toLowerCase();
-
-    const matchesSearch =
-      !search || searchableText.includes(search);
-
-    const matchesCategory =
-      !category || (product.category || "") === category;
-
-    return matchesSearch && matchesCategory;
-  });
-
-  if (sort === "price-low") {
-    products.sort((a,b) => Number(a.price) - Number(b.price));
-  }
-
-  if (sort === "price-high") {
-    products.sort((a,b) => Number(b.price) - Number(a.price));
-  }
-
-  if (sort === "name") {
-    products.sort((a,b) =>
-      String(a.name || "").localeCompare(String(b.name || ""))
-    );
-  }
-
-  const grid = $("productsGrid");
-  grid.replaceChildren();
-
-  if (!products.length) {
-    grid.innerHTML =
-      '<div class="empty">No products match your search. Try another keyword or category.</div>';
-    return;
-  }
-
-  products.forEach(product => {
-    const card = document.createElement("article");
-    card.className = "product";
-
-    const imageURL = String(product.image_url || "");
-
-    const safeImageURL = /^https?:\/\//i.test(imageURL)
-      ? escapeHTML(imageURL)
-      : "";
-
-    const image = safeImageURL
-      ? `<img src="${safeImageURL}" alt="${escapeHTML(product.name)}" loading="lazy">`
-      : "";
-
-    card.innerHTML = `
-      ${image}
-      <h3>${escapeHTML(product.name)}</h3>
-      <p class="muted">${escapeHTML(product.category || "Product")}</p>
-      <p>${escapeHTML(product.description || "")}</p>
-      <div class="price">${money(product.price)}</div>
-      <span class="badge">Approved product</span>
-      <p class="muted">Secure product checkout is coming in the next development stage.</p>
-    `;
-
-    grid.appendChild(card);
-  });
+function renderMarketplaceProducts(){
+ const search=$("productSearch").value.trim().toLowerCase();
+ const category=$("categoryFilter").value,sort=$("productSort").value;
+ let products=eligibleProducts.filter(p=>{
+  const text=[p.name,p.description,p.category].join(" ").toLowerCase();
+  return (!search||text.includes(search))&&(!category||(p.category||"")===category);
+ });
+ if(sort==="price-low")products.sort((a,b)=>Number(a.price)-Number(b.price));
+ if(sort==="price-high")products.sort((a,b)=>Number(b.price)-Number(a.price));
+ if(sort==="name")products.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
+ const grid=$("productsGrid");grid.replaceChildren();
+ if(!products.length){grid.innerHTML='<div class="empty">No products match your search. Try another keyword or category.</div>';return;}
+ products.forEach(product=>{
+  const card=document.createElement("article");card.className="product";
+  const imageURL=String(product.image_url||"");
+  const safeImageURL=/^https?:\/\//i.test(imageURL)?escapeHTML(imageURL):"";
+  const image=safeImageURL?`<img src="${safeImageURL}" alt="${escapeHTML(product.name)}" loading="lazy">`:"";
+  card.innerHTML=`
+   ${image}
+   <h3>${escapeHTML(product.name)}</h3>
+   <p class="muted">${escapeHTML(product.category||"Product")}</p>
+   <p>${escapeHTML(product.description||"")}</p>
+   <div class="price">${money(product.price)}</div>
+   <span class="badge">Approved product</span>
+   <button class="btn buy-product-btn" type="button" data-buy-product="${escapeHTML(product.id)}">Buy now</button>
+  `;
+  grid.appendChild(card);
+  card.querySelector(".buy-product-btn").addEventListener("click",()=>buyProduct(product.id));
+ });
 }
-
-async function loadProducts() {
-  setButton("loadProductsBtn",true,"Loading products...");
-
-  try {
-    const {data,error} = await db
-      .from("products")
-      .select("id,name,description,category,price,currency,image_url,stock_quantity,commission_rate,created_at")
-      .eq("approval_status","approved")
-      .eq("is_active",true)
-      .order("created_at",{ascending:false})
-      .limit(60);
-
-    if (error) throw error;
-
-    eligibleProducts = data || [];
-
-    // Build category options.
-    const categorySelect = $("categoryFilter");
-    const previousCategory = categorySelect.value;
-
-    const categories = [
-      ...new Set(
-        eligibleProducts
-          .map(product => String(product.category || "").trim())
-          .filter(Boolean)
-      )
-    ].sort((a,b) => a.localeCompare(b));
-
-    categorySelect.innerHTML =
-      '<option value="">All categories</option>';
-
-    categories.forEach(category => {
-      const option = document.createElement("option");
-      option.value = category;
-      option.textContent = category;
-      categorySelect.appendChild(option);
-    });
-
-    if (categories.includes(previousCategory)) {
-      categorySelect.value = previousCategory;
-    }
-
-    renderMarketplaceProducts();
-
-    // Populate affiliate product selector.
-    const select = $("affiliateProduct");
-    select.innerHTML = '<option value="">Choose a product</option>';
-
-    eligibleProducts.forEach(product => {
-      const option = document.createElement("option");
-      option.value = product.id;
-      option.textContent = product.name + " — " + money(product.price);
-      select.appendChild(option);
-    });
-
-    message("productsMessage",eligibleProducts.length + " approved products loaded.");
-
-  } catch(error) {
-    message("productsMessage","Could not load products: " + error.message,"error");
-  } finally {
-    setButton("loadProductsBtn",false,"Load products");
-  }
+async function loadProducts(){
+ setButton("loadProductsBtn",true,"Loading products...");
+ try{
+  const {data,error}=await db.from("products")
+   .select("id,name,description,category,price,currency,image_url,stock_quantity,commission_rate,created_at")
+   .eq("approval_status","approved").eq("is_active",true)
+   .order("created_at",{ascending:false}).limit(60);
+  if(error)throw error;eligibleProducts=data||[];
+  const select=$("categoryFilter"),previous=select.value;
+  const categories=[...new Set(eligibleProducts.map(p=>String(p.category||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  select.innerHTML='<option value="">All categories</option>';
+  categories.forEach(category=>{const o=document.createElement("option");o.value=category;o.textContent=category;select.appendChild(o);});
+  if(categories.includes(previous))select.value=previous;
+  renderMarketplaceProducts();
+  const affiliateSelect=$("affiliateProduct");
+  affiliateSelect.innerHTML='<option value="">Choose a product</option>';
+  eligibleProducts.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+" — "+money(p.price);affiliateSelect.appendChild(o);});
+  message("productsMessage",eligibleProducts.length+" approved products loaded.");
+ }catch(e){message("productsMessage","Could not load products: "+e.message,"error");}
+ finally{setButton("loadProductsBtn",false,"Load products");}
 }
-
 $("productSearch").addEventListener("input",renderMarketplaceProducts);
 $("categoryFilter").addEventListener("change",renderMarketplaceProducts);
 $("productSort").addEventListener("change",renderMarketplaceProducts);
 
 /* AFFILIATE LINKS */
-
-async function loadReferralLinks() {
-  const {data,error} = await db
-    .from("referral_links")
-    .select("id,product_id,referral_code,is_active,created_at")
-    .eq("affiliate_id",currentUser.id)
-    .order("created_at",{ascending:false});
-
-  if (error) throw error;
-
-  const container = $("referralLinks");
-
-  if (!data || !data.length) {
-    container.innerHTML = '<div class="empty">You have not created any referral links yet.</div>';
-    return;
-  }
-
-  container.replaceChildren();
-
-  data.forEach(link => {
-    const item = document.createElement("div");
-    item.className = "panel";
-
-    const url = window.location.origin + "/?ref=" +
-      encodeURIComponent(link.referral_code) +
-      "&product=" + encodeURIComponent(link.product_id);
-
-    item.innerHTML = `
-      <strong>Referral code: ${escapeHTML(link.referral_code)}</strong>
-      <p class="muted">Product ID: ${escapeHTML(link.product_id)}</p>
-      <p class="muted">Status: ${link.is_active ? "Active" : "Inactive"}</p>
-      <input readonly value="${escapeHTML(url)}">
-      <button class="btn secondary copyLinkBtn" type="button">Copy link</button>
-    `;
-
-    item.querySelector(".copyLinkBtn").addEventListener("click",async () => {
-      try {
-        await navigator.clipboard.writeText(url);
-        message("linkMessage","Referral link copied.");
-      } catch {
-        message("linkMessage","Copy was blocked by your browser. Please copy the link manually.","error");
-      }
-    });
-
-    container.appendChild(item);
+async function loadReferralLinks(){
+ const {data,error}=await db.from("referral_links").select("id,product_id,referral_code,is_active,created_at").eq("affiliate_id",currentUser.id).order("created_at",{ascending:false});
+ if(error)throw error;
+ const container=$("referralLinks");
+ if(!data||!data.length){container.innerHTML='<div class="empty">You have not created any referral links yet.</div>';return;}
+ container.replaceChildren();
+ data.forEach(link=>{
+  const item=document.createElement("div");item.className="panel";
+  const url=location.origin+"/?ref="+encodeURIComponent(link.referral_code)+"&product="+encodeURIComponent(link.product_id);
+  item.innerHTML=`
+   <strong>Referral code: ${escapeHTML(link.referral_code)}</strong>
+   <p class="muted">Product ID: ${escapeHTML(link.product_id)}</p>
+   <p class="muted">Status: ${link.is_active?"Active":"Inactive"}</p>
+   <input readonly value="${escapeHTML(url)}">
+   <button class="btn secondary copyLinkBtn" type="button">Copy link</button>`;
+  item.querySelector(".copyLinkBtn").addEventListener("click",async()=>{
+   try{await navigator.clipboard.writeText(url);message("linkMessage","Referral link copied.");}
+   catch{message("linkMessage","Copy was blocked by your browser. Please copy the link manually.","error");}
   });
+  container.appendChild(item);
+ });
 }
-
-async function generateReferralLink() {
-  const productId = $("affiliateProduct").value;
-
-  if (!productId) {
-    message("linkMessage","Choose a product first.","error");
-    return;
-  }
-
-  const product = eligibleProducts.find(p => p.id === productId);
-
-  if (!product) {
-    message("linkMessage","Product not found. Reload the marketplace.","error");
-    return;
-  }
-
-  setButton("generateLinkBtn",true,"Generating...");
-
-  try {
-    const code = "PS" + crypto.randomUUID().replace(/-/g,"").slice(0,12).toUpperCase();
-
-    const {error} = await db
-      .from("referral_links")
-      .insert({
-        affiliate_id:currentUser.id,
-        product_id:productId,
-        referral_code:code,
-        is_active:true
-      });
-
-    if (error) throw error;
-
-    message("linkMessage","Referral link record created. Tracking must be connected to product pages before clicks and sales can be attributed.");
-    await loadReferralLinks();
-
-  } catch(error) {
-    message("linkMessage","Could not create referral link: " + error.message,"error");
-  } finally {
-    setButton("generateLinkBtn",false,"Generate referral link");
-  }
+async function generateReferralLink(){
+ const productId=$("affiliateProduct").value;
+ if(!productId){message("linkMessage","Choose a product first.","error");return;}
+ const product=eligibleProducts.find(p=>p.id===productId);
+ if(!product){message("linkMessage","Product not found. Reload the marketplace.","error");return;}
+ setButton("generateLinkBtn",true,"Generating...");
+ try{
+  const code="PS"+crypto.randomUUID().replace(/-/g,"").slice(0,12).toUpperCase();
+  const {error}=await db.from("referral_links").insert({affiliate_id:currentUser.id,product_id:productId,referral_code:code,is_active:true});
+  if(error)throw error;
+  message("linkMessage","Referral link created. Tracking must be connected to product pages before clicks and sales can be attributed.");
+  await loadReferralLinks();
+ }catch(e){message("linkMessage","Could not create referral link: "+e.message,"error");}
+ finally{setButton("generateLinkBtn",false,"Generate referral link");}
 }
 
 /* COMMISSIONS */
-
-async function loadCommissions() {
-  const {data,error} = await db
-    .from("affiliate_commissions")
-    .select("id,commission_amount,currency,commission_status,created_at")
-    .eq("affiliate_id",currentUser.id)
-    .order("created_at",{ascending:false})
-    .limit(50);
-
-  if (error) throw error;
-
-  const container = $("commissions");
-
-  if (!data || !data.length) {
-    container.innerHTML = '<div class="empty">No commission records yet.</div>';
-    return;
-  }
-
-  const table = document.createElement("table");
-  table.innerHTML = "<thead><tr><th>Amount</th><th>Status</th><th>Date</th></tr></thead>";
-
-  const body = document.createElement("tbody");
-
-  data.forEach(item => {
-    const tr = document.createElement("tr");
-    const amount = document.createElement("td");
-    const status = document.createElement("td");
-    const date = document.createElement("td");
-
-    amount.textContent = money(item.commission_amount);
-    status.textContent = item.commission_status;
-    date.textContent = new Date(item.created_at).toLocaleDateString();
-
-    tr.append(amount,status,date);
-    body.appendChild(tr);
-  });
-
-  table.appendChild(body);
-  container.replaceChildren(table);
+async function loadCommissions(){
+ const {data,error}=await db.from("affiliate_commissions").select("id,commission_amount,currency,commission_status,created_at").eq("affiliate_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
+ if(error)throw error;
+ const container=$("commissions");
+ if(!data||!data.length){container.innerHTML='<div class="empty">No commission records yet.</div>';return;}
+ const table=document.createElement("table");
+ table.innerHTML="<thead><tr><th>Amount</th><th>Status</th><th>Date</th></tr></thead>";
+ const body=document.createElement("tbody");
+ data.forEach(item=>{
+  const tr=document.createElement("tr"),amount=document.createElement("td"),status=document.createElement("td"),date=document.createElement("td");
+  amount.textContent=money(item.commission_amount);status.textContent=item.commission_status;date.textContent=new Date(item.created_at).toLocaleDateString();
+  tr.append(amount,status,date);body.appendChild(tr);
+ });
+ table.appendChild(body);container.replaceChildren(table);
 }
 
 /* MERCHANT APPLICATION */
-
-async function loadMerchant() {
-  const {data,error} = await db
-    .from("merchants")
-    .select("id,business_name,approval_status")
-    .eq("user_id",currentUser.id)
-    .maybeSingle();
-
-  if (error) throw error;
-
-  currentMerchant = data;
-
-  if (!data) {
-    $("merchantStatus").textContent = "You have not submitted a merchant application yet.";
-    $("merchantApplication").classList.remove("hidden");
-    $("merchantTools").classList.add("hidden");
-    return;
-  }
-
-  $("merchantApplication").classList.add("hidden");
-
-  $("merchantStatus").textContent =
-    "Business: " + data.business_name + " | Application status: " + data.approval_status;
-
-  if (data.approval_status === "approved") {
-    $("merchantTools").classList.remove("hidden");
-    await loadMerchantProducts();
-  } else {
-    $("merchantTools").classList.add("hidden");
-  }
+async function loadMerchant(){
+ const {data,error}=await db.from("merchants").select("id,business_name,approval_status").eq("user_id",currentUser.id).maybeSingle();
+ if(error)throw error;currentMerchant=data;
+ if(!data){
+  $("merchantStatus").textContent="You have not submitted a merchant application yet.";
+  $("merchantApplication").classList.remove("hidden");$("merchantTools").classList.add("hidden");return;
+ }
+ $("merchantApplication").classList.add("hidden");
+ $("merchantStatus").textContent="Business: "+data.business_name+" | Application status: "+data.approval_status;
+ if(data.approval_status==="approved"){$("merchantTools").classList.remove("hidden");await loadMerchantProducts();}
+ else $("merchantTools").classList.add("hidden");
 }
-
-async function applyMerchant() {
-  const businessName = $("businessName").value.trim();
-
-  if (!businessName) {
-    message("merchantApplicationMessage","Enter your business name.","error");
-    return;
-  }
-
-  setButton("applyMerchantBtn",true,"Submitting...");
-
-  try {
-    const {error} = await db
-      .from("merchants")
-      .insert({
-        user_id:currentUser.id,
-        business_name:businessName,
-        business_description:$("businessDescription").value.trim(),
-        business_email:$("businessEmail").value.trim(),
-        business_phone:$("businessPhone").value.trim(),
-        country:$("businessCountry").value.trim(),
-        approval_status:"pending"
-      });
-
-    if (error) throw error;
-
-    message("merchantApplicationMessage","Your application has been submitted for review.");
-    await loadMerchant();
-
-  } catch(error) {
-    message("merchantApplicationMessage","Could not submit application: " + error.message,"error");
-  } finally {
-    setButton("applyMerchantBtn",false,"Submit application");
-  }
+async function applyMerchant(){
+ const businessName=$("businessName").value.trim();
+ if(!businessName){message("merchantApplicationMessage","Enter your business name.","error");return;}
+ setButton("applyMerchantBtn",true,"Submitting...");
+ try{
+  const {error}=await db.from("merchants").insert({
+   user_id:currentUser.id,business_name:businessName,
+   business_description:$("businessDescription").value.trim(),
+   business_email:$("businessEmail").value.trim(),
+   business_phone:$("businessPhone").value.trim(),
+   country:$("businessCountry").value.trim(),approval_status:"pending"
+  });
+  if(error)throw error;
+  message("merchantApplicationMessage","Your application has been submitted for review.");await loadMerchant();
+ }catch(e){message("merchantApplicationMessage","Could not submit application: "+e.message,"error");}
+ finally{setButton("applyMerchantBtn",false,"Submit application");}
 }
 
 /* MERCHANT PRODUCTS */
-
-async function addProduct() {
-  if (!currentMerchant || currentMerchant.approval_status !== "approved") {
-    message("productMessage","Your merchant account must be approved first.","error");
-    return;
-  }
-
-  const name = $("productName").value.trim();
-  const price = Number($("productPrice").value);
-  const commission = Number($("commissionRate").value);
-  const stock = Number($("productStock").value);
-
-  if (!name || !Number.isFinite(price) || price <= 0) {
-    message("productMessage","Enter a product name and a valid price.","error");
-    return;
-  }
-
-  if (!Number.isFinite(commission) || commission < 0 || commission > 100) {
-    message("productMessage","Commission must be between 0 and 100%.","error");
-    return;
-  }
-
-  if (!Number.isInteger(stock) || stock < 0) {
-    message("productMessage","Enter a valid stock quantity.","error");
-    return;
-  }
-
-  setButton("addProductBtn",true,"Submitting product...");
-
-  try {
-    const {error} = await db
-      .from("products")
-      .insert({
-        merchant_id:currentMerchant.id,
-        name,
-        description:$("productDescription").value.trim(),
-        category:$("productCategory").value.trim(),
-        price,
-        currency:"NGN",
-        image_url:$("productImage").value.trim() || null,
-        stock_quantity:stock,
-        commission_rate:commission,
-        approval_status:"pending",
-        is_active:false
-      });
-
-    if (error) throw error;
-
-    message("productMessage","Your product has been submitted for approval.");
-
-    $("productName").value = "";
-    $("productDescription").value = "";
-    $("productCategory").value = "";
-    $("productPrice").value = "";
-    $("productImage").value = "";
-    $("productStock").value = "1";
-
-    await loadMerchantProducts();
-
-  } catch(error) {
-    message("productMessage","Could not submit product: " + error.message,"error");
-  } finally {
-    setButton("addProductBtn",false,"Submit product for approval");
-  }
-}
-
-async function loadMerchantProducts() {
-  if (!currentMerchant) return;
-
-  const {data,error} = await db
-    .from("products")
-    .select("id,name,price,approval_status,is_active,created_at")
-    .eq("merchant_id",currentMerchant.id)
-    .order("created_at",{ascending:false});
-
-  if (error) throw error;
-
-  const container = $("merchantProducts");
-
-  if (!data || !data.length) {
-    container.innerHTML = '<div class="empty">You have not submitted any products yet.</div>';
-    return;
-  }
-
-  const table = document.createElement("table");
-  table.innerHTML = "<thead><tr><th>Product</th><th>Price</th><th>Approval</th></tr></thead>";
-
-  const body = document.createElement("tbody");
-
-  data.forEach(item => {
-    const tr = document.createElement("tr");
-    const name = document.createElement("td");
-    const price = document.createElement("td");
-    const status = document.createElement("td");
-
-    name.textContent = item.name;
-    price.textContent = money(item.price);
-    status.textContent = item.approval_status;
-
-    tr.append(name,price,status);
-    body.appendChild(tr);
+async function addProduct(){
+ if(!currentMerchant||currentMerchant.approval_status!=="approved"){message("productMessage","Your merchant account must be approved first.","error");return;}
+ const name=$("productName").value.trim(),price=Number($("productPrice").value),commission=Number($("commissionRate").value),stock=Number($("productStock").value);
+ if(!name||!Number.isFinite(price)||price<=0){message("productMessage","Enter a product name and a valid price.","error");return;}
+ if(!Number.isFinite(commission)||commission<0||commission>100){message("productMessage","Commission must be between 0 and 100%.","error");return;}
+ if(!Number.isInteger(stock)||stock<0){message("productMessage","Enter a valid stock quantity.","error");return;}
+ setButton("addProductBtn",true,"Submitting product...");
+ try{
+  const {error}=await db.from("products").insert({
+   merchant_id:currentMerchant.id,name,description:$("productDescription").value.trim(),
+   category:$("productCategory").value.trim(),price,currency:"NGN",
+   image_url:$("productImage").value.trim()||null,stock_quantity:stock,
+   commission_rate:commission,approval_status:"pending",is_active:false
   });
-
-  table.appendChild(body);
-  container.replaceChildren(table);
+  if(error)throw error;
+  message("productMessage","Your product has been submitted for approval.");
+  ["productName","productDescription","productCategory","productPrice","productImage"].forEach(id=>$(id).value="");
+  $("productStock").value="1";await loadMerchantProducts();
+ }catch(e){message("productMessage","Could not submit product: "+e.message,"error");}
+ finally{setButton("addProductBtn",false,"Submit product for approval");}
+}
+async function loadMerchantProducts(){
+ if(!currentMerchant)return;
+ const {data,error}=await db.from("products").select("id,name,price,approval_status,is_active,created_at").eq("merchant_id",currentMerchant.id).order("created_at",{ascending:false});
+ if(error)throw error;
+ const container=$("merchantProducts");
+ if(!data||!data.length){container.innerHTML='<div class="empty">You have not submitted any products yet.</div>';return;}
+ const table=document.createElement("table");table.innerHTML="<thead><tr><th>Product</th><th>Price</th><th>Approval</th></tr></thead>";
+ const body=document.createElement("tbody");
+ data.forEach(item=>{
+  const tr=document.createElement("tr"),name=document.createElement("td"),price=document.createElement("td"),status=document.createElement("td");
+  name.textContent=item.name;price.textContent=money(item.price);status.textContent=item.approval_status;
+  tr.append(name,price,status);body.appendChild(tr);
+ });
+ table.appendChild(body);container.replaceChildren(table);
 }
 
 /* CUSTOMER ORDERS */
-
-async function loadOrders() {
-  const {data,error} = await db
-    .from("orders")
-    .select("id,order_reference,total_amount,currency,payment_status,order_status,created_at")
-    .eq("customer_id",currentUser.id)
-    .order("created_at",{ascending:false})
-    .limit(50);
-
-  if (error) throw error;
-
-  const container = $("ordersList");
-
-  if (!data || !data.length) {
-    container.innerHTML = '<div class="empty">You have no orders yet.</div>';
-    return;
-  }
-
-  const table = document.createElement("table");
-  table.innerHTML = "<thead><tr><th>Order</th><th>Total</th><th>Payment</th><th>Order status</th></tr></thead>";
-
-  const body = document.createElement("tbody");
-
-  data.forEach(item => {
-    const tr = document.createElement("tr");
-    const ref = document.createElement("td");
-    const total = document.createElement("td");
-    const payment = document.createElement("td");
-    const status = document.createElement("td");
-
-    ref.textContent = item.order_reference;
-    total.textContent = money(item.total_amount);
-    payment.textContent = item.payment_status;
-    status.textContent = item.order_status;
-
-    tr.append(ref,total,payment,status);
-    body.appendChild(tr);
-  });
-
-  table.appendChild(body);
-  container.replaceChildren(table);
+async function loadOrders(){
+ const {data,error}=await db.from("orders").select("id,order_reference,total_amount,currency,payment_status,order_status,created_at").eq("customer_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
+ if(error)throw error;
+ const container=$("ordersList");
+ if(!data||!data.length){container.innerHTML='<div class="empty">You have no orders yet.</div>';return;}
+ const table=document.createElement("table");table.innerHTML="<thead><tr><th>Order</th><th>Total</th><th>Payment</th><th>Order status</th></tr></thead>";
+ const body=document.createElement("tbody");
+ data.forEach(item=>{
+  const tr=document.createElement("tr"),ref=document.createElement("td"),total=document.createElement("td"),payment=document.createElement("td"),status=document.createElement("td");
+  ref.textContent=item.order_reference;total.textContent=money(item.total_amount);payment.textContent=item.payment_status;status.textContent=item.order_status;
+  tr.append(ref,total,payment,status);body.appendChild(tr);
+ });
+ table.appendChild(body);container.replaceChildren(table);
 }
 
 /* DASHBOARD INITIALIZATION */
-
-async function loadDashboard(user) {
-  if (dashboardLoading) return;
-
-  dashboardLoading = true;
-  currentUser = user;
-
-  $("authPanel").classList.add("hidden");
-  $("dashboard").classList.remove("hidden");
-  $("welcome").textContent = "Signed in as " + user.email;
-
-  try {
-    await loadProfile();
-
-    try {
-      await loadMembership();
-    } catch(error) {
-      message("mainMessage","Membership information could not be loaded: " + error.message,"error");
-    }
-
-    try {
-      await loadMerchant();
-    } catch(error) {
-      message("merchantStatus","Merchant information could not be loaded: " + error.message,"error");
-    }
-
-    try {
-      await loadOrders();
-    } catch(error) {
-      $("ordersList").textContent = "Could not load orders: " + error.message;
-    }
-
-    try {
-      await loadReferralLinks();
-    } catch(error) {
-      $("referralLinks").textContent = "Could not load referral links: " + error.message;
-    }
-
-    try {
-      await loadCommissions();
-    } catch(error) {
-      $("commissions").textContent = "Could not load commissions: " + error.message;
-    }
-
-    await verifyMembershipPayment();
-
-  } catch(error) {
-    message("mainMessage","Dashboard loading error: " + error.message,"error");
-  } finally {
-    dashboardLoading = false;
-  }
+async function loadDashboard(user){
+ if(dashboardLoading)return;
+ dashboardLoading=true;currentUser=user;
+ $("authPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");
+ $("welcome").textContent="Signed in as "+user.email;
+ try{
+  await loadProfile();
+  try{await loadMembership();}catch(e){message("mainMessage","Membership information could not be loaded: "+e.message,"error");}
+  try{await loadMerchant();}catch(e){message("merchantStatus","Merchant information could not be loaded: "+e.message,"error");}
+  try{await loadOrders();}catch(e){$("ordersList").textContent="Could not load orders: "+e.message;}
+  try{await loadReferralLinks();}catch(e){$("referralLinks").textContent="Could not load referral links: "+e.message;}
+  try{await loadCommissions();}catch(e){$("commissions").textContent="Could not load commissions: "+e.message;}
+  await verifyMembershipPayment();
+  await verifyProductPayment();
+ }catch(e){message("mainMessage","Dashboard loading error: "+e.message,"error");}
+ finally{dashboardLoading=false;}
 }
 
 /* LOGOUT AND EVENTS */
-
-async function logout() {
-  const {error} = await db.auth.signOut();
-
-  if (error) {
-    message("mainMessage",error.message,"error");
-    return;
-  }
-
-  currentUser = null;
-  currentProfile = null;
-  currentMembership = null;
-  currentMerchant = null;
-  eligibleProducts = [];
-
-  $("dashboard").classList.add("hidden");
-  $("authPanel").classList.remove("hidden");
+async function logout(){
+ const {error}=await db.auth.signOut();
+ if(error){message("mainMessage",error.message,"error");return;}
+ currentUser=null;currentProfile=null;currentMembership=null;currentMerchant=null;eligibleProducts=[];
+ $("dashboard").classList.add("hidden");$("authPanel").classList.remove("hidden");
 }
-
 $("signupBtn").addEventListener("click",signUp);
 $("loginBtn").addEventListener("click",signIn);
 $("logoutBtn").addEventListener("click",logout);
@@ -1249,41 +644,20 @@ $("loadProductsBtn").addEventListener("click",loadProducts);
 $("generateLinkBtn").addEventListener("click",generateReferralLink);
 $("applyMerchantBtn").addEventListener("click",applyMerchant);
 $("addProductBtn").addEventListener("click",addProduct);
-
-$("refreshBtn").addEventListener("click",async () => {
-  const {data,error} = await db.auth.getUser();
-
-  if (error) {
-    message("mainMessage",error.message,"error");
-    return;
-  }
-
-  if (data.user) {
-    await loadDashboard(data.user);
-  }
+$("refreshBtn").addEventListener("click",async()=>{
+ const {data,error}=await db.auth.getUser();
+ if(error){message("mainMessage",error.message,"error");return;}
+ if(data.user)await loadDashboard(data.user);
 });
-
-db.auth.onAuthStateChange((event,session) => {
-  if (event === "SIGNED_OUT") {
-    currentUser = null;
-    $("dashboard").classList.add("hidden");
-    $("authPanel").classList.remove("hidden");
-  } else if (session?.user && !currentUser) {
-    loadDashboard(session.user);
-  }
+db.auth.onAuthStateChange((event,session)=>{
+ if(event==="SIGNED_OUT"){
+  currentUser=null;$("dashboard").classList.add("hidden");$("authPanel").classList.remove("hidden");
+ }else if(session?.user&&!currentUser)loadDashboard(session.user);
 });
-
-(async function start() {
-  const {data,error} = await db.auth.getSession();
-
-  if (error) {
-    message("authMessage",error.message,"error");
-    return;
-  }
-
-  if (data.session?.user) {
-    await loadDashboard(data.session.user);
-  }
+(async function start(){
+ const {data,error}=await db.auth.getSession();
+ if(error){message("authMessage",error.message,"error");return;}
+ if(data.session?.user)await loadDashboard(data.session.user);
 })();
 </script>
 </body>
