@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +84,10 @@ textarea{min-height:90px;resize:vertical}
   border:1px solid var(--line);border-radius:13px;padding:15px;
   background:white;min-width:0
 }
-.product img{width:100%;height:170px;object-fit:cover;border-radius:9px;background:#edf4ef}
+.product img{
+  width:100%;height:170px;object-fit:cover;
+  border-radius:9px;background:#edf4ef
+}
 .product h3{margin-bottom:5px}
 .price{font-weight:900;color:var(--green);font-size:19px}
 .product .btn{margin-top:10px}
@@ -206,12 +210,31 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
   <section id="marketplace" class="tab-content hidden">
     <div class="panel">
       <h2>Marketplace</h2>
-      <p class="muted">Explore products offered by participating Pansell merchants.</p>
+      <p class="muted">Discover digital and physical products offered by Pansell merchants.</p>
+
+      <label for="productSearch">Search products</label>
+      <input id="productSearch" type="search" placeholder="Search by product name or description">
+
+      <label for="categoryFilter">Product category</label>
+      <select id="categoryFilter">
+        <option value="">All categories</option>
+      </select>
+
+      <label for="productSort">Sort products</label>
+      <select id="productSort">
+        <option value="newest">Newest first</option>
+        <option value="price-low">Price: low to high</option>
+        <option value="price-high">Price: high to low</option>
+        <option value="name">Name: A to Z</option>
+      </select>
+
       <div class="actions">
         <button class="btn" id="loadProductsBtn" type="button">Load products</button>
       </div>
+
       <div id="productsMessage" class="message hidden"></div>
     </div>
+
     <div id="productsGrid" class="grid"></div>
   </section>
 
@@ -405,6 +428,10 @@ function showTab(tabName) {
   document.querySelectorAll(".tab").forEach(button => {
     button.classList.toggle("active", button.dataset.tab === tabName);
   });
+
+  if (tabName === "marketplace" && !eligibleProducts.length) {
+    loadProducts();
+  }
 }
 
 document.querySelectorAll(".tab").forEach(button => {
@@ -647,13 +674,85 @@ async function saveProfile() {
 
 /* MARKETPLACE */
 
+function renderMarketplaceProducts() {
+  const search = $("productSearch").value.trim().toLowerCase();
+  const category = $("categoryFilter").value;
+  const sort = $("productSort").value;
+
+  let products = eligibleProducts.filter(product => {
+    const searchableText = [
+      product.name,
+      product.description,
+      product.category
+    ].join(" ").toLowerCase();
+
+    const matchesSearch =
+      !search || searchableText.includes(search);
+
+    const matchesCategory =
+      !category || (product.category || "") === category;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  if (sort === "price-low") {
+    products.sort((a,b) => Number(a.price) - Number(b.price));
+  }
+
+  if (sort === "price-high") {
+    products.sort((a,b) => Number(b.price) - Number(a.price));
+  }
+
+  if (sort === "name") {
+    products.sort((a,b) =>
+      String(a.name || "").localeCompare(String(b.name || ""))
+    );
+  }
+
+  const grid = $("productsGrid");
+  grid.replaceChildren();
+
+  if (!products.length) {
+    grid.innerHTML =
+      '<div class="empty">No products match your search. Try another keyword or category.</div>';
+    return;
+  }
+
+  products.forEach(product => {
+    const card = document.createElement("article");
+    card.className = "product";
+
+    const imageURL = String(product.image_url || "");
+
+    const safeImageURL = /^https?:\/\//i.test(imageURL)
+      ? escapeHTML(imageURL)
+      : "";
+
+    const image = safeImageURL
+      ? `<img src="${safeImageURL}" alt="${escapeHTML(product.name)}" loading="lazy">`
+      : "";
+
+    card.innerHTML = `
+      ${image}
+      <h3>${escapeHTML(product.name)}</h3>
+      <p class="muted">${escapeHTML(product.category || "Product")}</p>
+      <p>${escapeHTML(product.description || "")}</p>
+      <div class="price">${money(product.price)}</div>
+      <span class="badge">Approved product</span>
+      <p class="muted">Secure product checkout is coming in the next development stage.</p>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
 async function loadProducts() {
   setButton("loadProductsBtn",true,"Loading products...");
 
   try {
     const {data,error} = await db
       .from("products")
-      .select("id,name,description,category,price,currency,image_url,stock_quantity,commission_rate")
+      .select("id,name,description,category,price,currency,image_url,stock_quantity,commission_rate,created_at")
       .eq("approval_status","approved")
       .eq("is_active",true)
       .order("created_at",{ascending:false})
@@ -662,34 +761,36 @@ async function loadProducts() {
     if (error) throw error;
 
     eligibleProducts = data || [];
-    const grid = $("productsGrid");
-    grid.replaceChildren();
 
-    if (!eligibleProducts.length) {
-      grid.innerHTML = '<div class="empty">No approved products are available yet. Please check again later.</div>';
-    } else {
-      eligibleProducts.forEach(product => {
-        const card = document.createElement("article");
-        card.className = "product";
+    // Build category options.
+    const categorySelect = $("categoryFilter");
+    const previousCategory = categorySelect.value;
 
-        const image = product.image_url
-          ? `<img src="${escapeHTML(product.image_url)}" alt="${escapeHTML(product.name)}" loading="lazy">`
-          : "";
+    const categories = [
+      ...new Set(
+        eligibleProducts
+          .map(product => String(product.category || "").trim())
+          .filter(Boolean)
+      )
+    ].sort((a,b) => a.localeCompare(b));
 
-        card.innerHTML = `
-          ${image}
-          <h3>${escapeHTML(product.name)}</h3>
-          <p class="muted">${escapeHTML(product.category || "Product")}</p>
-          <p>${escapeHTML(product.description || "")}</p>
-          <div class="price">${money(product.price)}</div>
-          <span class="badge">Approved product</span>
-          <p class="muted">Checkout will be enabled when secure product payment is connected.</p>
-        `;
+    categorySelect.innerHTML =
+      '<option value="">All categories</option>';
 
-        grid.appendChild(card);
-      });
+    categories.forEach(category => {
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category;
+      categorySelect.appendChild(option);
+    });
+
+    if (categories.includes(previousCategory)) {
+      categorySelect.value = previousCategory;
     }
 
+    renderMarketplaceProducts();
+
+    // Populate affiliate product selector.
     const select = $("affiliateProduct");
     select.innerHTML = '<option value="">Choose a product</option>';
 
@@ -701,12 +802,17 @@ async function loadProducts() {
     });
 
     message("productsMessage",eligibleProducts.length + " approved products loaded.");
+
   } catch(error) {
     message("productsMessage","Could not load products: " + error.message,"error");
   } finally {
     setButton("loadProductsBtn",false,"Load products");
   }
 }
+
+$("productSearch").addEventListener("input",renderMarketplaceProducts);
+$("categoryFilter").addEventListener("change",renderMarketplaceProducts);
+$("productSort").addEventListener("change",renderMarketplaceProducts);
 
 /* AFFILIATE LINKS */
 
@@ -766,6 +872,7 @@ async function generateReferralLink() {
   }
 
   const product = eligibleProducts.find(p => p.id === productId);
+
   if (!product) {
     message("linkMessage","Product not found. Reload the marketplace.","error");
     return;
@@ -787,8 +894,9 @@ async function generateReferralLink() {
 
     if (error) throw error;
 
-    message("linkMessage","Referral link record created. Tracking must be connected to the product pages before clicks and sales can be attributed.");
+    message("linkMessage","Referral link record created. Tracking must be connected to product pages before clicks and sales can be attributed.");
     await loadReferralLinks();
+
   } catch(error) {
     message("linkMessage","Could not create referral link: " + error.message,"error");
   } finally {
@@ -898,6 +1006,7 @@ async function applyMerchant() {
 
     message("merchantApplicationMessage","Your application has been submitted for review.");
     await loadMerchant();
+
   } catch(error) {
     message("merchantApplicationMessage","Could not submit application: " + error.message,"error");
   } finally {
@@ -964,6 +1073,7 @@ async function addProduct() {
     $("productStock").value = "1";
 
     await loadMerchantProducts();
+
   } catch(error) {
     message("productMessage","Could not submit product: " + error.message,"error");
   } finally {
@@ -1121,6 +1231,11 @@ async function logout() {
   }
 
   currentUser = null;
+  currentProfile = null;
+  currentMembership = null;
+  currentMerchant = null;
+  eligibleProducts = [];
+
   $("dashboard").classList.add("hidden");
   $("authPanel").classList.remove("hidden");
 }
@@ -1137,10 +1252,12 @@ $("addProductBtn").addEventListener("click",addProduct);
 
 $("refreshBtn").addEventListener("click",async () => {
   const {data,error} = await db.auth.getUser();
+
   if (error) {
     message("mainMessage",error.message,"error");
     return;
   }
+
   if (data.user) {
     await loadDashboard(data.user);
   }
