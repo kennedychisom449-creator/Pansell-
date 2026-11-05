@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#087f5b">
+<title>Pansell | My Account</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--green:#087f5b;--deep:#064b37;--gold:#d6ad55;--paper:#f5faf7;--line:#e2ece6}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--paper);color:#173329}
+header{background:white;padding:16px 5%;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:24px;font-weight:900;color:var(--deep);text-decoration:none}
+header a{color:var(--green);text-decoration:none;font-weight:bold}
+main{max-width:760px;margin:35px auto;padding:0 16px}
+.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:25px;margin-bottom:20px;box-shadow:0 8px 25px #064b3710}
+h1,h2{color:var(--deep)}
+h1{font-size:27px}
+label{display:block;font-weight:bold;margin:13px 0 6px}
+input{width:100%;padding:13px;border:1px solid #ccdcd2;border-radius:9px;font-size:16px}
+button{border:0;border-radius:9px;padding:13px 18px;background:var(--green);color:white;font-weight:bold;font-size:15px;cursor:pointer}
+button:disabled{opacity:.5}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.secondary{background:#e8f3ed;color:var(--deep)}
+.hidden{display:none!important}
+.message{padding:12px;border-radius:9px;background:#edf7f0;margin-top:15px;white-space:pre-wrap}
+.error{background:#fff0ef;color:#a12c24}
+.balance{background:linear-gradient(120deg,var(--deep),var(--green));color:white;border-radius:15px;padding:22px}
+.balance small{opacity:.85}
+.balance strong{display:block;font-size:32px;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{text-align:left;padding:11px 6px;border-bottom:1px solid var(--line)}
+.status{font-weight:bold}
+.muted{color:#687a70;font-size:14px}
+@media(max-width:500px){.panel{padding:18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+<a class="brand" href="./">Pansell</a>
+<a href="./">Back to home</a>
+</header>
+
+<main>
+<section id="authPanel" class="panel">
+<h1>Welcome to Pansell</h1>
+<p class="muted">Create an account or sign in to access your Pansell account.</p>
+
+<div id="signupFields">
+<label for="fullName">Full name</label>
+<input id="fullName" autocomplete="name" placeholder="Your full name">
+</div>
+
+<label for="email">Email address</label>
+<input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+
+<label for="password">Password</label>
+<input id="password" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+
+<div class="actions">
+<button id="signupBtn" type="button">Create account</button>
+<button id="loginBtn" type="button" class="secondary">Sign in</button>
+</div>
+<div id="authMessage" class="message hidden"></div>
+</section>
+
+<section id="dashboard" class="hidden">
+<div class="panel">
+<h1>My Pansell Account</h1>
+<p id="welcome" class="muted"></p>
+<div class="balance">
+<small>Available wallet balance</small>
+<strong id="balance">₦0.00</strong>
+<small id="pending">Pending balance: ₦0.00</small>
+</div>
+<div class="actions">
+<button id="refreshBtn" type="button">Refresh wallet</button>
+<button id="logoutBtn" type="button" class="secondary">Sign out</button>
+</div>
+<div id="walletMessage" class="message hidden"></div>
+</div>
+
+<div class="panel">
+<h2>Transaction history</h2>
+<div id="transactions" class="muted">Loading transactions...</div>
+</div>
+</section>
+</main>
+
+<script>
+const SUPABASE_URL = "https://ofayykhbdljssdxpxmcv.supabase.co";
+const SUPABASE_PUBLIC_KEY = "sb_publishable_p9CveE2emCUT6dguqj63mQ_rVD7O35U";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLIC_KEY
+);
+
+const $ = id => document.getElementById(id);
+
+function showMessage(id, message, isError=false) {
+  const el = $(id);
+  el.textContent = message;
+  el.classList.remove("hidden", "error");
+  if (isError) el.classList.add("error");
+}
+
+function money(value) {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN"
+  }).format(Number(value || 0));
+}
+
+async function signUp() {
+  const fullName = $("fullName").value.trim();
+  const email = $("email").value.trim();
+  const password = $("password").value;
+
+  if (!fullName || !email || password.length < 8) {
+    showMessage("authMessage",
+      "Enter your full name, a valid email and a password of at least 8 characters.",
+      true);
+    return;
+  }
+
+  $("signupBtn").disabled = true;
+
+  try {
+    const { data, error } = await db.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: window.location.origin +
+          window.location.pathname
+      }
+    });
+
+    if (error) throw error;
+
+    if (data.session) {
+      showMessage("authMessage", "Account created successfully.");
+      await loadDashboard(data.session.user);
+    } else {
+      showMessage("authMessage",
+        "Registration received. Check your email and confirm your account before signing in.");
+    }
+  } catch (error) {
+    showMessage("authMessage", error.message, true);
+  } finally {
+    $("signupBtn").disabled = false;
+  }
+}
+
+async function signIn() {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+
+  if (!email || !password) {
+    showMessage("authMessage", "Enter your email and password.", true);
+    return;
+  }
+
+  $("loginBtn").disabled = true;
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
+    await loadDashboard(data.user);
+  } catch (error) {
+    showMessage("authMessage", error.message, true);
+  } finally {
+    $("loginBtn").disabled = false;
+  }
+}
+
+async function loadDashboard(user) {
+  $("authPanel").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  $("welcome").textContent = "Signed in as " + user.email;
+  await loadWallet(user.id);
+}
+
+async function loadWallet(userId) {
+  $("refreshBtn").disabled = true;
+  $("transactions").textContent = "Loading transactions...";
+
+  try {
+    const { data: wallet, error } = await db
+      .from("wallets")
+      .select("id, available_balance, pending_balance, currency")
+      .eq("user_id", userId)
+      .eq("currency", "NGN")
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!wallet) {
+      $("balance").textContent = money(0);
+      $("pending").textContent = "Your wallet is being set up. Refresh shortly.";
+      $("transactions").textContent = "Wallet not found yet.";
+      showMessage("walletMessage",
+        "No wallet was returned. Please refresh. If this continues, we will check your profile and wallet creation trigger.",
+        true);
+      return;
+    }
+
+    $("balance").textContent = money(wallet.available_balance);
+    $("pending").textContent =
+      "Pending balance: " + money(wallet.pending_balance);
+
+    const { data: rows, error: historyError } = await db
+      .from("wallet_transactions")
+      .select("id, transaction_type, amount, currency, transaction_status, reference, description, created_at")
+      .eq("wallet_id", wallet.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (historyError) throw historyError;
+
+    if (!rows || rows.length === 0) {
+      $("transactions").textContent = "No transactions yet.";
+    } else {
+      const table = document.createElement("table");
+      const head = document.createElement("thead");
+      head.innerHTML = "<tr><th>Type</th><th>Amount</th><th>Status</th></tr>";
+      table.appendChild(head);
+
+      const body = document.createElement("tbody");
+
+      rows.forEach(item => {
+        const tr = document.createElement("tr");
+        const type = document.createElement("td");
+        const amount = document.createElement("td");
+        const status = document.createElement("td");
+
+        type.textContent = item.transaction_type;
+        amount.textContent = money(item.amount);
+        status.textContent = item.transaction_status;
+        status.className = "status";
+
+        tr.append(type, amount, status);
+        body.appendChild(tr);
+      });
+
+      table.appendChild(body);
+      $("transactions").replaceChildren(table);
+    }
+
+    $("walletMessage").classList.add("hidden");
+
+  } catch (error) {
+    showMessage("walletMessage",
+      "Could not load wallet: " + error.message,
+      true);
+    $("transactions").textContent = "Could not load transaction history.";
+  } finally {
+    $("refreshBtn").disabled = false;
+  }
+}
+
+async function logout() {
+  const { error } = await db.auth.signOut();
+  if (error) {
+    showMessage("walletMessage", error.message, true);
+    return;
+  }
+  $("dashboard").classList.add("hidden");
+  $("authPanel").classList.remove("hidden");
+}
+
+$("signupBtn").addEventListener("click", signUp);
+$("loginBtn").addEventListener("click", signIn);
+$("refreshBtn").addEventListener("click", async () => {
+  const { data } = await db.auth.getUser();
+  if (data.user) await loadWallet(data.user.id);
+});
+$("logoutBtn").addEventListener("click", logout);
+
+db.auth.onAuthStateChange((event, session) => {
+  if (session?.user) {
+    loadDashboard(session.user);
+  } else if (event === "SIGNED_OUT") {
+    $("dashboard").classList.add("hidden");
+    $("authPanel").classList.remove("hidden");
+  }
+});
+
+(async function start() {
+  const { data, error } = await db.auth.getSession();
+  if (error) {
+    showMessage("authMessage", error.message, true);
+    return;
+  }
+  if (data.session?.user) {
+    await loadDashboard(data.session.user);
+  }
+})();
+</script>
+</body>
+</html>
