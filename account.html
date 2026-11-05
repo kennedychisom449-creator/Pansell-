@@ -58,6 +58,12 @@ th,td{text-align:left;padding:11px 7px;border-bottom:1px solid var(--line)}
 .empty{padding:20px;text-align:center;color:var(--muted);background:#f7faf8;border-radius:10px}
 hr{border:0;border-top:1px solid var(--line);margin:20px 0}
 footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
+.modal-overlay{position:fixed;inset:0;background:rgba(4,24,17,.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px}
+.modal-overlay.hidden{display:none}
+.modal-card{width:min(100%,480px);max-height:90vh;overflow-y:auto;background:white;border-radius:18px;padding:24px;box-shadow:0 20px 70px #0004}
+.modal-card h2{margin-top:0}
+.modal-card .actions{margin-top:18px}
+.modal-card .actions .btn{flex:1}
 @media(max-width:750px){.grid{grid-template-columns:1fr 1fr}.panel{padding:17px}}
 @media(max-width:480px){.grid{grid-template-columns:1fr}header{padding:13px 4%}.brand{font-size:21px}}
 </style>
@@ -204,6 +210,11 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 <label for="productName">Product name</label><input id="productName" placeholder="Product name">
 <label for="productDescription">Description</label><textarea id="productDescription" placeholder="Describe your product"></textarea>
 <label for="productCategory">Category</label><input id="productCategory" placeholder="e.g. Digital products, Fashion">
+<label for="productType">Product type</label>
+<select id="productType">
+<option value="digital">Digital product</option>
+<option value="physical">Physical product</option>
+</select>
 <label for="productPrice">Price (₦)</label><input id="productPrice" type="number" min="1" step="0.01" placeholder="Price">
 <label for="productImage">Product image URL</label><input id="productImage" type="url" placeholder="https://example.com/image.jpg">
 <label for="productStock">Stock quantity</label><input id="productStock" type="number" min="0" value="1">
@@ -240,6 +251,26 @@ footer{text-align:center;padding:25px;color:var(--muted);font-size:13px}
 </section>
 </section>
 </main>
+
+<!-- BUYER CHECKOUT DETAILS -->
+<div id="buyerCheckoutModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="buyerCheckoutTitle">
+<div class="modal-card">
+<h2 id="buyerCheckoutTitle">Complete your order</h2>
+<p class="muted">Enter your details before proceeding to secure payment.</p>
+<p id="buyerCheckoutProduct" class="price"></p>
+<label for="buyerFullName">Buyer full name</label>
+<input id="buyerFullName" autocomplete="name" placeholder="Enter your full name">
+<label for="buyerEmail">Email address</label>
+<input id="buyerEmail" type="email" autocomplete="email" placeholder="Enter your email address">
+<p class="muted">Your order confirmation and receipt details will use this email address.</p>
+<div id="buyerCheckoutMessage" class="message hidden" aria-live="polite"></div>
+<div class="actions">
+<button class="btn" id="buyerContinueBtn" type="button">Continue to payment</button>
+<button class="btn secondary" id="buyerCancelBtn" type="button">Cancel</button>
+</div>
+</div>
+</div>
+
 <footer>© <span id="year"></span> Pansell. Shop. Promote. Earn.</footer>
 
 <script>
@@ -251,7 +282,7 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLIC_KEY);
 const $=id=>document.getElementById(id);
 
 let currentUser=null,currentProfile=null,currentMembership=null,currentMerchant=null;
-let eligibleProducts=[],dashboardLoading=false,checkoutBusy=false;
+let eligibleProducts=[],dashboardLoading=false,checkoutBusy=false,pendingCheckoutProduct=null;
 
 $("year").textContent=new Date().getFullYear();
 
@@ -358,40 +389,86 @@ async function callProductCheckout(payload){
  if(!response.ok||result.success===false)throw new Error(result.message||result.error||"Product checkout request failed.");
  return result;
 }
+
+function closeBuyerCheckout(){
+ $("buyerCheckoutModal").classList.add("hidden");
+ pendingCheckoutProduct=null;
+ $("buyerCheckoutMessage").classList.add("hidden");
+}
+
 async function buyProduct(productId){
  if(checkoutBusy)return;
  if(!currentUser){message("productsMessage","Please sign in before buying a product.","error");return;}
  const product=eligibleProducts.find(p=>p.id===productId);
  if(!product){message("productsMessage","This product is no longer available. Reload the marketplace.","error");return;}
+
+ pendingCheckoutProduct=product;
+ $("buyerFullName").value=currentProfile?.full_name||currentUser.user_metadata?.full_name||"";
+ $("buyerEmail").value=currentProfile?.email||currentUser.email||"";
+ $("buyerCheckoutProduct").textContent=product.name+" · "+money(product.price);
+ $("buyerCheckoutMessage").classList.add("hidden");
+ $("buyerCheckoutMessage").textContent="";
+ $("buyerCheckoutModal").classList.remove("hidden");
+}
+
+async function continueBuyerCheckout(){
+ if(checkoutBusy||!pendingCheckoutProduct)return;
+
+ const fullName=$("buyerFullName").value.trim();
+ const email=$("buyerEmail").value.trim();
+
+ if(fullName.length<3){
+  message("buyerCheckoutMessage","Please enter your full name.","error");return;
+ }
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+  message("buyerCheckoutMessage","Please enter a valid email address.","error");return;
+ }
+
  checkoutBusy=true;
- const button=document.querySelector('[data-buy-product="'+productId+'"]');
- if(button){button.disabled=true;button.textContent="Preparing checkout...";}
+ const product=pendingCheckoutProduct;
+ const button=$("buyerContinueBtn");
+ button.disabled=true;
+ button.textContent="Preparing payment...";
+
  try{
   const params=new URLSearchParams(location.search);
   const result=await callProductCheckout({
-   action:"initialize_product_checkout",product_id:productId,quantity:1,
-   referral_code:params.get("ref")||""
+   action:"initialize_product_checkout",
+   product_id:product.id,
+   quantity:1,
+   referral_code:params.get("ref")||"",
+   customer_full_name:fullName,
+   customer_email:email
   });
+
   if(!result.authorization_url)throw new Error("Paystack did not return a checkout link.");
   location.href=result.authorization_url;
  }catch(e){
-  message("productsMessage",e.message,"error");checkoutBusy=false;
-  if(button){button.disabled=false;button.textContent="Buy now";}
+  message("buyerCheckoutMessage",e.message,"error");
+  checkoutBusy=false;
+  button.disabled=false;
+  button.textContent="Continue to payment";
  }
 }
+
 async function verifyProductPayment(){
  const params=new URLSearchParams(location.search);
  const reference=params.get("reference")||params.get("trxref");
  if(!reference||params.get("membership")==="success")return;
+
  message("mainMessage","Verifying your product payment...");
  try{
   const result=await callProductCheckout({action:"verify_product_checkout",reference});
   if(!result.success)throw new Error(result.message||"Payment verification failed.");
   message("mainMessage","Payment verified successfully. Your order is confirmed.");
   await loadOrders();
- }catch(e){message("mainMessage","We could not confirm this product payment yet: "+e.message,"error");}
+ }catch(e){
+  message("mainMessage","We could not confirm this product payment yet: "+e.message,"error");
+ }
  finally{history.replaceState({},document.title,location.origin+location.pathname);}
-}/* PROFILE */
+}
+
+/* PROFILE */
 async function loadProfile(){
  const {data,error}=await db.from("profiles").select("full_name,email,phone,country,role,account_status").eq("id",currentUser.id).maybeSingle();
  if(error)throw error;currentProfile=data;
@@ -407,7 +484,9 @@ async function saveProfile(){
  try{
   const updates={id:currentUser.id,full_name:$("profileName").value.trim(),email:currentUser.email,phone:$("profilePhone").value.trim(),country:$("profileCountry").value.trim(),role:$("profileRole").value,updated_at:new Date().toISOString()};
   const {error}=await db.from("profiles").upsert(updates,{onConflict:"id"});
-  if(error)throw error;message("profileMessage","Your profile has been updated.");await loadProfile();
+  if(error)throw error;
+  message("profileMessage","Your profile has been updated.");
+  await loadProfile();
  }catch(e){message("profileMessage","Could not update profile: "+e.message,"error");}
  finally{setButton("saveProfileBtn",false,"Save profile");}
 }
@@ -424,42 +503,56 @@ function renderMarketplaceProducts(){
  if(sort==="price-high")products.sort((a,b)=>Number(b.price)-Number(a.price));
  if(sort==="name")products.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
  const grid=$("productsGrid");grid.replaceChildren();
- if(!products.length){grid.innerHTML='<div class="empty">No products match your search. Try another keyword or category.</div>';return;}
+
+ if(!products.length){
+  grid.innerHTML='<div class="empty">No products match your search. Try another keyword or category.</div>';return;
+ }
+
  products.forEach(product=>{
   const card=document.createElement("article");card.className="product";
   const imageURL=String(product.image_url||"");
   const safeImageURL=/^https?:\/\//i.test(imageURL)?escapeHTML(imageURL):"";
   const image=safeImageURL?`<img src="${safeImageURL}" alt="${escapeHTML(product.name)}" loading="lazy">`:"";
+  const type=product.product_type==="digital"?"Digital product":"Physical product";
+
   card.innerHTML=`
    ${image}
    <h3>${escapeHTML(product.name)}</h3>
-   <p class="muted">${escapeHTML(product.category||"Product")}</p>
+   <p class="muted">${escapeHTML(product.category||"Product")} · ${type}</p>
    <p>${escapeHTML(product.description||"")}</p>
    <div class="price">${money(product.price)}</div>
-   <span class="badge">Approved product</span>
+   <span class="badge">${type}</span>
    <button class="btn buy-product-btn" type="button" data-buy-product="${escapeHTML(product.id)}">Buy now</button>
   `;
   grid.appendChild(card);
   card.querySelector(".buy-product-btn").addEventListener("click",()=>buyProduct(product.id));
  });
 }
+
 async function loadProducts(){
  setButton("loadProductsBtn",true,"Loading products...");
  try{
   const {data,error}=await db.from("products")
-   .select("id,name,description,category,price,currency,image_url,stock_quantity,commission_rate,created_at")
+   .select("id,name,description,category,product_type,price,currency,image_url,stock_quantity,commission_rate,created_at")
    .eq("approval_status","approved").eq("is_active",true)
    .order("created_at",{ascending:false}).limit(60);
-  if(error)throw error;eligibleProducts=data||[];
+  if(error)throw error;
+  eligibleProducts=data||[];
+
   const select=$("categoryFilter"),previous=select.value;
   const categories=[...new Set(eligibleProducts.map(p=>String(p.category||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
   select.innerHTML='<option value="">All categories</option>';
-  categories.forEach(category=>{const o=document.createElement("option");o.value=category;o.textContent=category;select.appendChild(o);});
+  categories.forEach(category=>{
+   const o=document.createElement("option");o.value=category;o.textContent=category;select.appendChild(o);
+  });
   if(categories.includes(previous))select.value=previous;
+
   renderMarketplaceProducts();
   const affiliateSelect=$("affiliateProduct");
   affiliateSelect.innerHTML='<option value="">Choose a product</option>';
-  eligibleProducts.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+" — "+money(p.price);affiliateSelect.appendChild(o);});
+  eligibleProducts.forEach(p=>{
+   const o=document.createElement("option");o.value=p.id;o.textContent=p.name+" — "+money(p.price);affiliateSelect.appendChild(o);
+  });
   message("productsMessage",eligibleProducts.length+" approved products loaded.");
  }catch(e){message("productsMessage","Could not load products: "+e.message,"error");}
  finally{setButton("loadProductsBtn",false,"Load products");}
@@ -475,6 +568,7 @@ async function loadReferralLinks(){
  const container=$("referralLinks");
  if(!data||!data.length){container.innerHTML='<div class="empty">You have not created any referral links yet.</div>';return;}
  container.replaceChildren();
+
  data.forEach(link=>{
   const item=document.createElement("div");item.className="panel";
   const url=location.origin+"/?ref="+encodeURIComponent(link.referral_code)+"&product="+encodeURIComponent(link.product_id);
@@ -518,7 +612,9 @@ async function loadCommissions(){
  const body=document.createElement("tbody");
  data.forEach(item=>{
   const tr=document.createElement("tr"),amount=document.createElement("td"),status=document.createElement("td"),date=document.createElement("td");
-  amount.textContent=money(item.commission_amount);status.textContent=item.commission_status;date.textContent=new Date(item.created_at).toLocaleDateString();
+  amount.textContent=money(item.commission_amount);
+  status.textContent=item.commission_status;
+  date.textContent=new Date(item.created_at).toLocaleDateString();
   tr.append(amount,status,date);body.appendChild(tr);
  });
  table.appendChild(body);container.replaceChildren(table);
@@ -528,14 +624,20 @@ async function loadCommissions(){
 async function loadMerchant(){
  const {data,error}=await db.from("merchants").select("id,business_name,approval_status").eq("user_id",currentUser.id).maybeSingle();
  if(error)throw error;currentMerchant=data;
+
  if(!data){
   $("merchantStatus").textContent="You have not submitted a merchant application yet.";
-  $("merchantApplication").classList.remove("hidden");$("merchantTools").classList.add("hidden");return;
+  $("merchantApplication").classList.remove("hidden");
+  $("merchantTools").classList.add("hidden");return;
  }
+
  $("merchantApplication").classList.add("hidden");
  $("merchantStatus").textContent="Business: "+data.business_name+" | Application status: "+data.approval_status;
- if(data.approval_status==="approved"){$("merchantTools").classList.remove("hidden");await loadMerchantProducts();}
- else $("merchantTools").classList.add("hidden");
+
+ if(data.approval_status==="approved"){
+  $("merchantTools").classList.remove("hidden");
+  await loadMerchantProducts();
+ }else $("merchantTools").classList.add("hidden");
 }
 async function applyMerchant(){
  const businessName=$("businessName").value.trim();
@@ -550,47 +652,96 @@ async function applyMerchant(){
    country:$("businessCountry").value.trim(),approval_status:"pending"
   });
   if(error)throw error;
-  message("merchantApplicationMessage","Your application has been submitted for review.");await loadMerchant();
+  message("merchantApplicationMessage","Your application has been submitted for review.");
+  await loadMerchant();
  }catch(e){message("merchantApplicationMessage","Could not submit application: "+e.message,"error");}
  finally{setButton("applyMerchantBtn",false,"Submit application");}
 }
 
 /* MERCHANT PRODUCTS */
 async function addProduct(){
- if(!currentMerchant||currentMerchant.approval_status!=="approved"){message("productMessage","Your merchant account must be approved first.","error");return;}
- const name=$("productName").value.trim(),price=Number($("productPrice").value),commission=Number($("commissionRate").value),stock=Number($("productStock").value);
- if(!name||!Number.isFinite(price)||price<=0){message("productMessage","Enter a product name and a valid price.","error");return;}
- if(!Number.isFinite(commission)||commission<0||commission>100){message("productMessage","Commission must be between 0 and 100%.","error");return;}
- if(!Number.isInteger(stock)||stock<0){message("productMessage","Enter a valid stock quantity.","error");return;}
+ if(!currentMerchant||currentMerchant.approval_status!=="approved"){
+  message("productMessage","Your merchant account must be approved first.","error");return;
+ }
+
+ const name=$("productName").value.trim();
+ const price=Number($("productPrice").value);
+ const commission=Number($("commissionRate").value);
+ const stock=Number($("productStock").value);
+ const productType=$("productType").value;
+
+ if(!name||!Number.isFinite(price)||price<=0){
+  message("productMessage","Enter a product name and a valid price.","error");return;
+ }
+ if(!Number.isFinite(commission)||commission<0||commission>100){
+  message("productMessage","Commission must be between 0 and 100%.","error");return;
+ }
+ if(!Number.isInteger(stock)||stock<0){
+  message("productMessage","Enter a valid stock quantity.","error");return;
+ }
+
  setButton("addProductBtn",true,"Submitting product...");
  try{
   const {error}=await db.from("products").insert({
-   merchant_id:currentMerchant.id,name,description:$("productDescription").value.trim(),
-   category:$("productCategory").value.trim(),price,currency:"NGN",
-   image_url:$("productImage").value.trim()||null,stock_quantity:stock,
-   commission_rate:commission,approval_status:"pending",is_active:false
+   merchant_id:currentMerchant.id,
+   name,
+   description:$("productDescription").value.trim(),
+   category:$("productCategory").value.trim(),
+   product_type:productType,
+   price,
+   currency:"NGN",
+   image_url:$("productImage").value.trim()||null,
+   stock_quantity:stock,
+   commission_rate:commission,
+   approval_status:"pending",
+   is_active:false
   });
   if(error)throw error;
+
   message("productMessage","Your product has been submitted for approval.");
   ["productName","productDescription","productCategory","productPrice","productImage"].forEach(id=>$(id).value="");
-  $("productStock").value="1";await loadMerchantProducts();
+  $("productStock").value="1";
+  $("productType").value="digital";
+  await loadMerchantProducts();
  }catch(e){message("productMessage","Could not submit product: "+e.message,"error");}
  finally{setButton("addProductBtn",false,"Submit product for approval");}
 }
+
 async function loadMerchantProducts(){
  if(!currentMerchant)return;
- const {data,error}=await db.from("products").select("id,name,price,approval_status,is_active,created_at").eq("merchant_id",currentMerchant.id).order("created_at",{ascending:false});
+
+ const {data,error}=await db.from("products")
+  .select("id,name,product_type,price,approval_status,is_active,created_at")
+  .eq("merchant_id",currentMerchant.id)
+  .order("created_at",{ascending:false});
  if(error)throw error;
+
  const container=$("merchantProducts");
- if(!data||!data.length){container.innerHTML='<div class="empty">You have not submitted any products yet.</div>';return;}
- const table=document.createElement("table");table.innerHTML="<thead><tr><th>Product</th><th>Price</th><th>Approval</th></tr></thead>";
+ if(!data||!data.length){
+  container.innerHTML='<div class="empty">You have not submitted any products yet.</div>';return;
+ }
+
+ const table=document.createElement("table");
+ table.innerHTML="<thead><tr><th>Product</th><th>Type</th><th>Price</th><th>Approval</th></tr></thead>";
  const body=document.createElement("tbody");
+
  data.forEach(item=>{
-  const tr=document.createElement("tr"),name=document.createElement("td"),price=document.createElement("td"),status=document.createElement("td");
-  name.textContent=item.name;price.textContent=money(item.price);status.textContent=item.approval_status;
-  tr.append(name,price,status);body.appendChild(tr);
+  const tr=document.createElement("tr");
+  const name=document.createElement("td");
+  const type=document.createElement("td");
+  const price=document.createElement("td");
+  const status=document.createElement("td");
+
+  name.textContent=item.name;
+  type.textContent=item.product_type==="digital"?"Digital":"Physical";
+  price.textContent=money(item.price);
+  status.textContent=item.approval_status;
+  tr.append(name,type,price,status);
+  body.appendChild(tr);
  });
- table.appendChild(body);container.replaceChildren(table);
+
+ table.appendChild(body);
+ container.replaceChildren(table);
 }
 
 /* CUSTOMER ORDERS */
@@ -599,22 +750,38 @@ async function loadOrders(){
  if(error)throw error;
  const container=$("ordersList");
  if(!data||!data.length){container.innerHTML='<div class="empty">You have no orders yet.</div>';return;}
- const table=document.createElement("table");table.innerHTML="<thead><tr><th>Order</th><th>Total</th><th>Payment</th><th>Order status</th></tr></thead>";
+
+ const table=document.createElement("table");
+ table.innerHTML="<thead><tr><th>Order</th><th>Total</th><th>Payment</th><th>Order status</th></tr></thead>";
  const body=document.createElement("tbody");
+
  data.forEach(item=>{
-  const tr=document.createElement("tr"),ref=document.createElement("td"),total=document.createElement("td"),payment=document.createElement("td"),status=document.createElement("td");
-  ref.textContent=item.order_reference;total.textContent=money(item.total_amount);payment.textContent=item.payment_status;status.textContent=item.order_status;
-  tr.append(ref,total,payment,status);body.appendChild(tr);
+  const tr=document.createElement("tr");
+  const ref=document.createElement("td");
+  const total=document.createElement("td");
+  const payment=document.createElement("td");
+  const status=document.createElement("td");
+
+  ref.textContent=item.order_reference;
+  total.textContent=money(item.total_amount);
+  payment.textContent=item.payment_status;
+  status.textContent=item.order_status;
+  tr.append(ref,total,payment,status);
+  body.appendChild(tr);
  });
- table.appendChild(body);container.replaceChildren(table);
+
+ table.appendChild(body);
+ container.replaceChildren(table);
 }
 
 /* DASHBOARD INITIALIZATION */
 async function loadDashboard(user){
  if(dashboardLoading)return;
  dashboardLoading=true;currentUser=user;
- $("authPanel").classList.add("hidden");$("dashboard").classList.remove("hidden");
+ $("authPanel").classList.add("hidden");
+ $("dashboard").classList.remove("hidden");
  $("welcome").textContent="Signed in as "+user.email;
+
  try{
   await loadProfile();
   try{await loadMembership();}catch(e){message("mainMessage","Membership information could not be loaded: "+e.message,"error");}
@@ -633,7 +800,8 @@ async function logout(){
  const {error}=await db.auth.signOut();
  if(error){message("mainMessage",error.message,"error");return;}
  currentUser=null;currentProfile=null;currentMembership=null;currentMerchant=null;eligibleProducts=[];
- $("dashboard").classList.add("hidden");$("authPanel").classList.remove("hidden");
+ $("dashboard").classList.add("hidden");
+ $("authPanel").classList.remove("hidden");
 }
 $("signupBtn").addEventListener("click",signUp);
 $("loginBtn").addEventListener("click",signIn);
@@ -644,16 +812,26 @@ $("loadProductsBtn").addEventListener("click",loadProducts);
 $("generateLinkBtn").addEventListener("click",generateReferralLink);
 $("applyMerchantBtn").addEventListener("click",applyMerchant);
 $("addProductBtn").addEventListener("click",addProduct);
+$("buyerContinueBtn").addEventListener("click",continueBuyerCheckout);
+$("buyerCancelBtn").addEventListener("click",closeBuyerCheckout);
+$("buyerCheckoutModal").addEventListener("click",e=>{
+ if(e.target===$("buyerCheckoutModal"))closeBuyerCheckout();
+});
+
 $("refreshBtn").addEventListener("click",async()=>{
  const {data,error}=await db.auth.getUser();
  if(error){message("mainMessage",error.message,"error");return;}
  if(data.user)await loadDashboard(data.user);
 });
+
 db.auth.onAuthStateChange((event,session)=>{
  if(event==="SIGNED_OUT"){
-  currentUser=null;$("dashboard").classList.add("hidden");$("authPanel").classList.remove("hidden");
+  currentUser=null;
+  $("dashboard").classList.add("hidden");
+  $("authPanel").classList.remove("hidden");
  }else if(session?.user&&!currentUser)loadDashboard(session.user);
 });
+
 (async function start(){
  const {data,error}=await db.auth.getSession();
  if(error){message("authMessage",error.message,"error");return;}
